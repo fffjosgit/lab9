@@ -8,6 +8,8 @@ extern void umain(int argc, char **argv);
 const volatile struct Env *thisenv;
 const char *binaryname = "<unknown>";
 
+void (* volatile sys_exit)(void);
+
 void
 libmain(int argc, char **argv)
 {
@@ -19,7 +21,9 @@ libmain(int argc, char **argv)
 		binaryname = argv[0];
 
 	// call user main routine
+	umain(argc, argv);
 
 	// exit
+	sys_exit();
 }
 

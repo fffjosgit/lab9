@@ -1,17 +1,19 @@
 #include <inc/lib.h>
 
-//extern void *find_symbol( char *name ) __attribute__((weak));
-volatile int (*cprintf) (const char *fmt, ...) __attribute__((weak));
+int (* volatile cprintf) (const char *fmt, ...);
+void (* volatile sys_yield)(void);
 
 void
 umain( int argc, char **argv )
 {
-   int i;
+	int i;
+	int j;
 
-   cprintf = (void *) NULL;
+	cprintf( "HERE\n" );
 
-   cprintf( "HERE\n" );
-
-   for( i = 0; i < 10000; ++i ) {}
+	for(j = 0; j < 5; ++j) {
+		for( i = 0; i < 10000; ++i ) {}
+		sys_yield();
+	}
 }
 

@@ -29,9 +29,6 @@ extern const volatile struct Env *thisenv;
 extern const volatile struct Env envs[NENV];
 //extern const volatile struct PageInfo pages[];
 
-// exit.c
-void	exit(void);
-
 // readline.c
 char*	readline(const char *buf);
 

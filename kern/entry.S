@@ -82,6 +82,39 @@ relocated:
 	# Should never get here, but in case we do, just spin.
 spin:	jmp	spin
 
+.comm ret_eip, 4
+.comm ebp_reg, 4
+.comm esp_reg, 4
+ 
+.globl sys_yield
+sys_yield:
+	popl ret_eip
+	movl %ebp, ebp_reg
+	movl %esp, esp_reg
+	movl $0x0,%ebp
+	movl $(bootstacktop),%esp
+	pushl ret_eip
+	pushl $0x0
+	pushl $0x0
+	pushl %ds
+	pushl %es
+	pushl %eax
+	pushl %ecx
+	pushl %edx
+	pushl %ebx
+	pushl esp_reg
+	pushl ebp_reg
+	pushl %esi
+	pushl %edi
+	pushl %esp
+	call csys_yield
+loop1:	jmp loop1
+
+#LAB2 your code here
+.globl sys_exit
+sys_exit:
+	call csys_exit 
+loop2:	jmp loop2
 
 .data
 ###################################################################

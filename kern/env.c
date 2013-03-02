@@ -20,6 +20,8 @@ static struct Env *env_free_list;	// Free environment list
 
 #define ENVGENSHIFT	12		// >= LOGNENV
 
+extern unsigned int bootstacktop;
+
 // Global descriptor table.
 //
 // Set up global descriptor table (GDT) with separate segments for
@@ -118,6 +120,24 @@ env_init(void)
 {
 	// Set up envs array
 	// LAB 2: Your code here.
+	int i;
+	for(i = 0; i < NENV; i++) {
+	    envs[i].env_id = 0;
+	    envs[i].env_parent_id = 0;
+	    envs[i].env_type= ENV_TYPE_KERNEL;
+	    envs[i].env_status = 0;
+	    envs[i].env_runs = 0;
+	    envs[i].env_pgdir = NULL;
+	
+	    if (i == 0) {
+		    env_free_list = &envs[0];
+	    } else {
+		    envs[i-1].env_link = &envs[i];
+		    if (i == NENV - 1) {
+			    envs[i].env_link = NULL;
+		    }
+	    }
+	}
 	
 	// Per-CPU part of the initialization
 	env_init_percpu();
@@ -193,8 +213,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	e->env_tf.tf_es = GD_KD | 0;
 	e->env_tf.tf_ss = GD_KD | 0;
 	// LAB 2: your code here
-	//e->env_tf.tf_esp = USTACKTOP;
-	//
+	// e->env_tf.tf_esp = 0xf0210000;
 	e->env_tf.tf_cs = GD_KT | 0;
 	// You will set e->env_tf.tf_eip later.
 
@@ -216,9 +235,6 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 static void
 region_alloc(struct Env *e, void *va, size_t len)
 {
-	// LAB 2: Your code here.
-	// (But only if you need it for load_icode.)
-	//
 	// Hint: It is easier to use region_alloc if the caller can pass
 	//   'va' and 'len' values that are not page-aligned.
 	//   You should round va down, and round (va + len) up.
@@ -249,6 +265,8 @@ region_alloc(struct Env *e, void *va, size_t len)
 // load_icode panics if it encounters problems.
 //  - How might load_icode fail?  What might be wrong with the given input?
 //
+extern void (*sys_exit)(void);
+extern void (*sys_yield)(void);
 static void
 load_icode(struct Env *e, uint8_t *binary, size_t size)
 {
@@ -279,7 +297,31 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 	//  What?  (See env_run() and env_pop_tf() below.)
 
 	// LAB 2: Your code here.
+	struct Elf *elfhdr = (struct Elf *) binary;
+	struct Proghdr *ph, *eph;
+	if (elfhdr->e_magic != ELF_MAGIC || elfhdr->e_type != ET_EXEC)
+		panic("Can't load elf file.\n");
+	ph = (struct Proghdr *) ((uint8_t *) elfhdr + elfhdr->e_phoff);
+	eph = ph + elfhdr->e_phnum;
 
+	for ( ;ph < eph; ph++) {
+		if (ph->p_type != ELF_PROG_LOAD) 
+			continue;
+		if (ph->p_filesz > ph->p_memsz)
+			panic("file size is great than memory size\n");
+		memmove((void *) ph->p_va, binary+ph->p_offset, ph->p_filesz);
+		memset((void *) ph->p_va + ph->p_filesz, 0, (ph->p_memsz - ph->p_filesz));
+	}
+
+	e->env_tf.tf_eip = elfhdr->e_entry;
+
+	/*
+	*((int *) 0xf0302008) = (int) &cprintf;
+	*((int *) 0xf0302010) = (int) &sys_exit;
+	*((int *) 0xf0302004) = (int) &sys_yield;
+	*((int *) 0xf020200c) = (int) &sys_exit;
+	*((int *) 0xf0202004) = (int) &sys_yield;
+	*/
 }
 
 //
@@ -306,55 +348,21 @@ env_create(uint8_t *binary, size_t size, enum EnvType type)
 //
 // Frees env e and all memory it uses.
 //
-//void
-//env_free(struct Env *e)
-//{
-//	pte_t *pt;
-//	uint32_t pdeno, pteno;
-//	physaddr_t pa;
-//
-//	// If freeing the current environment, switch to kern_pgdir
-//	// before freeing the page directory, just in case the page
-//	// gets reused.
-//	if (e == curenv)
-//		lcr3(PADDR(kern_pgdir));
-//
-//	// Note the environment's demise.
-//	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
-//
-//	// Flush all mapped pages in the user portion of the address space
-//	static_assert(UTOP % PTSIZE == 0);
-//	for (pdeno = 0; pdeno < PDX(UTOP); pdeno++) {
-//
-//		// only look at mapped page tables
-//		if (!(e->env_pgdir[pdeno] & PTE_P))
-//			continue;
-//
-//		// find the pa and va of the page table
-//		pa = PTE_ADDR(e->env_pgdir[pdeno]);
-//		pt = (pte_t*) KADDR(pa);
-//
-//		// unmap all PTEs in this page table
-//		for (pteno = 0; pteno <= PTX(~0); pteno++) {
-//			if (pt[pteno] & PTE_P)
-//				page_remove(e->env_pgdir, PGADDR(pdeno, pteno, 0));
-//		}
-//
-//		// free the page table itself
-//		e->env_pgdir[pdeno] = 0;
-//		page_decref(pa2page(pa));
-//	}
-//
-//	// free the page directory
-//	pa = PADDR(e->env_pgdir);
-//	e->env_pgdir = 0;
-//	page_decref(pa2page(pa));
-//
-//	// return the environment to the free list
-//	e->env_status = ENV_FREE;
-//	e->env_link = env_free_list;
-//	env_free_list = e;
-//}
+void
+env_free(struct Env *e)
+{
+	pte_t *pt;
+	uint32_t pdeno, pteno;
+	physaddr_t pa;
+
+	// Note the environment's demise.
+	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
+
+	// return the environment to the free list
+	e->env_status = ENV_FREE;
+	e->env_link = env_free_list;
+	env_free_list = e;
+}
 
 //
 // Frees environment e.
@@ -372,12 +380,28 @@ env_destroy(struct Env *e)
 		return;
 	}
 
-	//env_free(e);
+	env_free(e);
 
 	if (curenv == e) {
 		curenv = NULL;
 		sched_yield();
 	}
+}
+
+
+void
+csys_exit(void)
+{
+	env_destroy(curenv);
+}
+
+void
+csys_yield(struct Trapframe *tf)
+{
+	memcpy(&curenv->env_tf.tf_regs, &tf->tf_regs, sizeof(struct PushRegs));
+	curenv->env_tf.tf_eip = tf->tf_eip;
+	curenv->env_tf.tf_esp = curenv->env_tf.tf_regs.reg_oesp;
+	sched_yield();
 }
 
 
@@ -390,18 +414,35 @@ env_destroy(struct Env *e)
 void
 env_pop_tf(struct Trapframe *tf)
 {
+	static uintptr_t eip = 0;
+	eip = tf->tf_eip;
 	// Record the CPU we are running on for user-space debugging
 	curenv->env_cpunum = cpunum();
 
-	__asm __volatile("movl %0,%%esp\n"
-		"\tpopal\n"
-		"\tpopl %%es\n"
-		"\tpopl %%ds\n"
-		"\taddl $0x8,%%esp\n" /* skip tf_trapno and tf_errcode */
-		"\tiret"
-		: : "g" (tf) : "memory");
-//	__asm__ __volatile__ ( "call ": : );
-	panic("iret failed");  /* mostly to placate the compiler */
+        asm volatile (
+                "mov %c[ebx](%[tf]), %%ebx \n\t"
+                "mov %c[ecx](%[tf]), %%ecx \n\t"
+                "mov %c[edx](%[tf]), %%edx \n\t"
+                "mov %c[esi](%[tf]), %%esi \n\t"
+                "mov %c[edi](%[tf]), %%edi \n\t"
+                "mov %c[ebp](%[tf]), %%ebp \n\t"
+                "mov %c[esp](%[tf]), %%esp \n\t"
+                "mov %c[eax](%[tf]), %%eax \n\t"
+		"jmp *%[eip]"
+		:
+		: [tf]"a"(tf),
+		  [eip]"m"(eip),
+		  [eax]"i"(offsetof(struct Trapframe, tf_regs.reg_eax)),
+		  [ebx]"i"(offsetof(struct Trapframe, tf_regs.reg_ebx)),
+		  [ecx]"i"(offsetof(struct Trapframe, tf_regs.reg_ecx)),
+		  [edx]"i"(offsetof(struct Trapframe, tf_regs.reg_edx)),
+		  [esi]"i"(offsetof(struct Trapframe, tf_regs.reg_esi)),
+		  [edi]"i"(offsetof(struct Trapframe, tf_regs.reg_edi)),
+		  [ebp]"i"(offsetof(struct Trapframe, tf_regs.reg_ebp)),
+//		  [esp]"i"(offsetof(struct Trapframe, tf_regs.reg_oesp))
+		  [esp]"i"(offsetof(struct Trapframe, tf_esp))
+		: "cc", "memory", "ebx", "ecx", "edx", "esi", "edi" );
+	panic("BUG");  /* mostly to placate the compiler */
 }
 
 //
@@ -436,7 +477,6 @@ env_run(struct Env *e)
    curenv = e;
    e->env_status = ENV_RUNNING;
    e->env_runs++;
-
    env_pop_tf(&(e->env_tf));
 }
 

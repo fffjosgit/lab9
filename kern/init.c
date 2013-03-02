@@ -11,12 +11,12 @@
 #include <kern/sched.h>
 #include <kern/cpu.h>
 
-
 void
 i386_init(void)
 {
 	extern char edata[], end[];
 	extern uint8_t _binary_obj_prog_test1_start[], _binary_obj_prog_test1_end[], _binary_obj_prog_test1_size[];
+	extern uint8_t _binary_obj_kern_kernel_pre_sym_start[], _binary_obj_kern_kernel_pre_sym_end[], _binary_obj_kern_kernel_pre_sym_size[];
 
 	// Before doing anything else, complete the ELF loading process.
 	// Clear the uninitialized global data (BSS) section of our program.
@@ -30,6 +30,9 @@ i386_init(void)
 	cprintf("6828 decimal is %o octal!\n", 6828);
 	cprintf("END: %p\n", end);
 	cprintf("TEST1 START: %p\t END: %p\t SIZE: %d\n", _binary_obj_prog_test1_start, _binary_obj_prog_test1_end, ( int ) _binary_obj_prog_test1_size );
+	//cprintf("kernel_sym: %p\t END: %p\t SIZE: %d\n", _binary_obj_kern_kernel_pre_sym_start, _binary_obj_kern_kernel_pre_sym_end, (int) _binary_obj_kern_kernel_pre_sym_size );
+	_binary_obj_kern_kernel_pre_sym_end[0] = 0;
+	//cprintf("kernel_sym: %s\n", _binary_obj_kern_kernel_pre_sym_start);
 
 	// user environment initialization functions
 	env_init();
@@ -39,8 +42,8 @@ i386_init(void)
 	//ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	//ENV_CREATE(prog_test1, ENV_TYPE_KERNEL);
-	//ENV_CREATE(prog_test2, ENV_TYPE_KERNEL);
+	ENV_CREATE(prog_test1, ENV_TYPE_KERNEL);
+	ENV_CREATE(prog_test2, ENV_TYPE_KERNEL);
 #endif // TEST*
 
 	// Schedule and run the first user environment!

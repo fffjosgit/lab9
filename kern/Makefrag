@@ -7,8 +7,7 @@
 
 OBJDIRS += kern
 
-KERN_LDFLAGS := $(LDFLAGS) -nostdlib
-KERN_LDSFLAGS := $(KERN_LDFLAGS) -T kern/kernel.ld
+KERN_LDFLAGS := $(LDFLAGS) -T kern/kernel.ld -nostdlib
 
 # entry.S must be first, so that it's the first code in the text segment!!!
 #
@@ -73,9 +72,11 @@ $(OBJDIR)/kern/init.o: $(OBJDIR)/.vars.INIT_CFLAGS
 $(OBJDIR)/kern/kernel: $(KERN_OBJFILES) $(KERN_BINFILES) kern/kernel.ld \
 	  $(OBJDIR)/.vars.KERN_LDFLAGS
 	@echo + ld $@
-	$(V)$(LD) -o $@ $(KERN_LDSFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b binary $(KERN_BINFILES)
-	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(LD) -r -o $@.pre $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b binary $(KERN_BINFILES)
+	$(V)$(NM) -n $@.pre > $@.pre.sym
+	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $@.pre -b binary $@.pre.sym
 	$(V)$(NM) -n $@ > $@.sym
+	$(V)$(OBJDUMP) -S $@ > $@.asm
 
 # How to build the kernel disk image
 $(OBJDIR)/kern/kernel.img: $(OBJDIR)/kern/kernel $(OBJDIR)/boot/boot

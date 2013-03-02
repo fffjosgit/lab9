@@ -29,6 +29,20 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 2: Your code here.
+	uint32_t envid = thiscpu->cpu_env ? ENVX(thiscpu->cpu_env->env_id) : 0;
+	uint32_t first_eid = (++envid) % NENV;
+	uint32_t next_envid;
+	int i;
+
+	for (i = 0; i < NENV; i++) {
+		next_envid = (first_eid+i) % NENV;
+		if (envs[next_envid].env_status == ENV_RUNNABLE) {
+			cprintf("envrun RUNNABLE: %d\n", next_envid);
+			env_run(&envs[next_envid]);
+			break;
+		}
+	}
+
 	// sched_halt never returns
 	sched_halt();
 }
