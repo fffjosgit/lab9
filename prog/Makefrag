@@ -19,3 +19,9 @@ $(OBJDIR)/prog/test2: $(OBJDIR)/prog/test2.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=
 	$(V)$(OBJDUMP) -S $@ > $@.asm
 	$(V)$(NM) -n $@ > $@.sym
 
+$(OBJDIR)/prog/test3: $(OBJDIR)/prog/test3.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog2.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog2.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+

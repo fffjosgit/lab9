@@ -10,6 +10,8 @@
 #include <kern/trap.h>
 #include <kern/sched.h>
 #include <kern/cpu.h>
+#include <kern/picirq.h>
+#include <kern/kclock.h>
 
 void
 i386_init(void)
@@ -42,8 +44,9 @@ i386_init(void)
 	//ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
+	ENV_CREATE(prog_test3, ENV_TYPE_KERNEL);
 	ENV_CREATE(prog_test1, ENV_TYPE_KERNEL);
-	ENV_CREATE(prog_test2, ENV_TYPE_KERNEL);
+	//ENV_CREATE(prog_test2, ENV_TYPE_KERNEL);
 #endif // TEST*
 
 	// Schedule and run the first user environment!

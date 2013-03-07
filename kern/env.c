@@ -428,7 +428,8 @@ env_pop_tf(struct Trapframe *tf)
                 "mov %c[ebp](%[tf]), %%ebp \n\t"
                 "mov %c[esp](%[tf]), %%esp \n\t"
                 "mov %c[eax](%[tf]), %%eax \n\t"
-		"jmp *%[eip]"
+		"sti		\n\t"
+		"jmp *%[eip]	\n\t"
 		:
 		: [tf]"a"(tf),
 		  [eip]"m"(eip),
