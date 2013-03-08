@@ -93,6 +93,11 @@ sys_yield:
 	movl %esp, esp_reg
 	movl $0x0,%ebp
 	movl $(bootstacktop),%esp
+	pushl $GD_KD
+	pushl esp_reg
+	pushfl
+	orl $0x200, (%esp)
+	pushl $GD_KT
 	pushl ret_eip
 	pushl $0x0
 	pushl $0x0

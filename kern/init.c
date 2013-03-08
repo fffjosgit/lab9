@@ -38,6 +38,11 @@ i386_init(void)
 
 	// user environment initialization functions
 	env_init();
+	
+	trap_init();
+
+	pic_init();
+	rtc_init();
 
 #if defined(TEST)
 	// Don't touch -- used by grading script!

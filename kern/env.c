@@ -217,6 +217,8 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	e->env_tf.tf_cs = GD_KT | 0;
 	// You will set e->env_tf.tf_eip later.
 
+	e->env_tf.tf_eflags |= FL_IF;
+
 	// commit the allocation
 	env_free_list = e->env_link;
 	*newenv_store = e;
@@ -398,12 +400,9 @@ csys_exit(void)
 void
 csys_yield(struct Trapframe *tf)
 {
-	memcpy(&curenv->env_tf.tf_regs, &tf->tf_regs, sizeof(struct PushRegs));
-	curenv->env_tf.tf_eip = tf->tf_eip;
-	curenv->env_tf.tf_esp = curenv->env_tf.tf_regs.reg_oesp;
+	memcpy(&curenv->env_tf, tf, sizeof(struct Trapframe));
 	sched_yield();
 }
-
 
 //
 // Restores the register values in the Trapframe with the 'iret' instruction.
@@ -414,8 +413,6 @@ csys_yield(struct Trapframe *tf)
 void
 env_pop_tf(struct Trapframe *tf)
 {
-	static uintptr_t eip = 0;
-	eip = tf->tf_eip;
 	// Record the CPU we are running on for user-space debugging
 	curenv->env_cpunum = cpunum();
 
@@ -427,12 +424,14 @@ env_pop_tf(struct Trapframe *tf)
                 "mov %c[edi](%[tf]), %%edi \n\t"
                 "mov %c[ebp](%[tf]), %%ebp \n\t"
                 "mov %c[esp](%[tf]), %%esp \n\t"
-                "mov %c[eax](%[tf]), %%eax \n\t"
-		"sti		\n\t"
-		"jmp *%[eip]	\n\t"
+		"pushl %c[eip](%[tf])	   \n\t"
+                "pushl %c[eflags](%[tf])   \n\t"
+		"mov %c[eax](%[tf]), %%eax \n\t"
+		"popfl			   \n\t"
+		"ret			   \n\t"
 		:
 		: [tf]"a"(tf),
-		  [eip]"m"(eip),
+		  [eip]"i"(offsetof(struct Trapframe, tf_eip)),
 		  [eax]"i"(offsetof(struct Trapframe, tf_regs.reg_eax)),
 		  [ebx]"i"(offsetof(struct Trapframe, tf_regs.reg_ebx)),
 		  [ecx]"i"(offsetof(struct Trapframe, tf_regs.reg_ecx)),
@@ -440,6 +439,7 @@ env_pop_tf(struct Trapframe *tf)
 		  [esi]"i"(offsetof(struct Trapframe, tf_regs.reg_esi)),
 		  [edi]"i"(offsetof(struct Trapframe, tf_regs.reg_edi)),
 		  [ebp]"i"(offsetof(struct Trapframe, tf_regs.reg_ebp)),
+		  [eflags]"i"(offsetof(struct Trapframe, tf_eflags)),
 //		  [esp]"i"(offsetof(struct Trapframe, tf_regs.reg_oesp))
 		  [esp]"i"(offsetof(struct Trapframe, tf_esp))
 		: "cc", "memory", "ebx", "ecx", "edx", "esi", "edi" );

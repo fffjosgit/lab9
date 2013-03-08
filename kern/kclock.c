@@ -25,6 +25,10 @@ rtc_init(void)
 {
 	uint8_t prev;
 
+	outb(IO_RTC_CMND, NMI_LOCK | RTC_BREG);
+	prev = inb(IO_RTC_DATA);
+	outb(IO_RTC_CMND, NMI_LOCK | RTC_BREG);
+	outb(IO_RTC_DATA, prev | RTC_PIE);
 	nmi_enable();
 }
 

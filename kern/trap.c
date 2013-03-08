@@ -72,7 +72,10 @@ void
 trap_init(void)
 {
 	// init idt structure
-	// LAB2: your code here.
+	int i = 0;
+	for ( ; i < MAX_IDT_NUM ; i++) {
+		SETGATE(idt[i], 0, GD_KT, trap_handlers[i], 0);
+	}
 
 	// Per-CPU setup 
 	trap_init_percpu();
@@ -136,10 +139,8 @@ print_trapframe(struct Trapframe *tf)
 	cprintf("  eip  0x%08x\n", tf->tf_eip);
 	cprintf("  cs   0x----%04x\n", tf->tf_cs);
 	cprintf("  flag 0x%08x\n", tf->tf_eflags);
-	if ((tf->tf_cs & 3) != 0) {
-		cprintf("  esp  0x%08x\n", tf->tf_esp);
-		cprintf("  ss   0x----%04x\n", tf->tf_ss);
-	}
+	cprintf("  esp  0x%08x\n", tf->tf_esp);
+	cprintf("  ss   0x----%04x\n", tf->tf_ss);
 }
 
 void
@@ -174,7 +175,7 @@ trap_dispatch(struct Trapframe *tf)
 	}
 
 	if (tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER) {
-		// LAB2 your code here
+		sched_yield();
         	return;
     	}
 

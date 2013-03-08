@@ -38,7 +38,6 @@
 .comm intr_ret_eip, 4
 .comm intr_ebp_reg, 4
 .comm intr_esp_reg, 4
-.comm intr_err_code, 4
 .comm intr_cs, 4
 .comm intr_eflags, 4
 
@@ -47,7 +46,6 @@
 	.type name, @function;						\
 	.align 2;							\
 	name:								\
-	popl intr_err_code;						\
 	popl intr_ret_eip;						\
 	popl intr_cs;							\
 	popl intr_eflags;						\
@@ -55,12 +53,11 @@
 	movl %esp, intr_esp_reg;					\
 	movl $0x0,%ebp;							\
 	movl $(bootstacktop),%esp;					\
-	pushl $0x10;							\
+	pushl $GD_KD;							\
 	pushl intr_esp_reg;						\
 	pushl intr_eflags;						\
 	pushl intr_cs;							\
 	pushl intr_ret_eip;						\
-	pushl intr_err_code;						\
 	pushl $0;							\
 	pushl $(num);							\
 	jmp _alltraps
