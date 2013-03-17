@@ -49,9 +49,11 @@ i386_init(void)
 	//ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	ENV_CREATE(prog_test3, ENV_TYPE_KERNEL);
-	ENV_CREATE(prog_test1, ENV_TYPE_KERNEL);
+	//ENV_CREATE(prog_test3, ENV_TYPE_KERNEL);
+	//ENV_CREATE(prog_test1, ENV_TYPE_KERNEL);
 	//ENV_CREATE(prog_test2, ENV_TYPE_KERNEL);
+	ENV_CREATE(prog_test4, ENV_TYPE_KERNEL);
+	ENV_CREATE(prog_test5, ENV_TYPE_KERNEL);
 #endif // TEST*
 
 	// Schedule and run the first user environment!

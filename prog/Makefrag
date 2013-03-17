@@ -25,3 +25,15 @@ $(OBJDIR)/prog/test3: $(OBJDIR)/prog/test3.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=
 	$(V)$(OBJDUMP) -S $@ > $@.asm
 	$(V)$(NM) -n $@ > $@.sym
 
+$(OBJDIR)/prog/test4: $(OBJDIR)/prog/test4.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog1.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog1.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/test5: $(OBJDIR)/prog/test4.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog2.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog2.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $(OBJDIR)/prog/test4.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
