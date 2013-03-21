@@ -14,7 +14,7 @@ void	env_init(void);
 void	env_init_percpu(void);
 int	env_alloc(struct Env **e, envid_t parent_id);
 void	env_free(struct Env *e);
-void	env_create(uint8_t *binary, size_t size, enum EnvType type);
+void	env_create(uint8_t *binary, size_t size, enum EnvType type, int staticnum);
 void	env_destroy(struct Env *e);	// Does not return if e == curenv
 
 int	envid2env(envid_t envid, struct Env **env_store, bool checkperm);
@@ -25,14 +25,20 @@ void	env_pop_tf(struct Trapframe *tf) __attribute__((noreturn));
 // Without this extra macro, we couldn't pass macros like TEST to
 // ENV_CREATE because of the C pre-processor's argument prescan rule.
 #define ENV_PASTE3(x, y, z) x ## y ## z
+#define ENV_EXTERN(x)          \
+		extern uint8_t ENV_PASTE3(_binary_obj_, x, _start)[],	\
+			ENV_PASTE3(_binary_obj_, x, _size)[];
 
-#define ENV_CREATE(x, type)						\
+#define ENV_START(x) ENV_PASTE3(_binary_obj_, x, _start)
+#define ENV_SIZE(x) ENV_PASTE3(_binary_obj_, x, _size)
+
+#define ENV_CREATE(x, type, num)					\
 	do {								\
 		extern uint8_t ENV_PASTE3(_binary_obj_, x, _start)[],	\
 			ENV_PASTE3(_binary_obj_, x, _size)[];		\
 		env_create(ENV_PASTE3(_binary_obj_, x, _start),		\
 			   (int)ENV_PASTE3(_binary_obj_, x, _size),	\
-			   type);					\
+			   type, num);					\
 	} while (0)
 
 #endif // !JOS_KERN_ENV_H

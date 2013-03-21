@@ -326,6 +326,79 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 	*/
 }
 
+int envsid[10];
+
+void
+env_start_again( uint32_t num )
+{
+	uint8_t *binary = NULL;
+	size_t size = 0;
+	ENV_EXTERN(prog_sc_test1)
+	ENV_EXTERN(prog_sc_test2)
+	ENV_EXTERN(prog_sc_test3)
+	ENV_EXTERN(prog_sc_test4)
+	ENV_EXTERN(prog_sc_test5)
+	ENV_EXTERN(prog_sc_test6)
+	ENV_EXTERN(prog_sc_test7)
+	ENV_EXTERN(prog_sc_test8)
+	ENV_EXTERN(prog_sc_test9)
+	ENV_EXTERN(prog_sc_test10)
+
+	if ( envsid[num] ) {
+		return;
+	}
+
+	switch (num) {
+	case 1:
+		binary = ENV_START(prog_sc_test1);
+		size = (int) ENV_SIZE(prog_sc_test1);
+		break;
+	case 2:
+		binary = ENV_START(prog_sc_test2);
+		size = (int) ENV_SIZE(prog_sc_test2);
+		break;
+	case 3:
+		binary = ENV_START(prog_sc_test3);
+		size = (int) ENV_SIZE(prog_sc_test3);
+		break;
+	case 4:
+		binary = ENV_START(prog_sc_test4);
+		size = (int) ENV_SIZE(prog_sc_test4);
+		break;
+	case 5:
+		binary = ENV_START(prog_sc_test5);
+		size = (int) ENV_SIZE(prog_sc_test5);
+		break;
+	case 6:
+		binary = ENV_START(prog_sc_test6);
+		size = (int) ENV_SIZE(prog_sc_test6);
+		break;
+	case 7:
+		binary = ENV_START(prog_sc_test7);
+		size = (int) ENV_SIZE(prog_sc_test7);
+		break;
+	case 8:
+		binary = ENV_START(prog_sc_test8);
+		size = (int) ENV_SIZE(prog_sc_test8);
+		break;
+	case 9:
+		binary = ENV_START(prog_sc_test9);
+		size = (int) ENV_SIZE(prog_sc_test9);
+		break;
+	case 10:
+		binary = ENV_START(prog_sc_test10);
+		size = (int) ENV_SIZE(prog_sc_test10);
+		break;
+	default:
+		binary = ENV_START(prog_sc_test1);
+		size = (int) ENV_SIZE(prog_sc_test1);
+		num = 1;
+		break;
+	}
+
+	env_create(binary, size, ENV_TYPE_KERNEL, num);
+}
+
 //
 // Allocates a new env with env_alloc, loads the named elf
 // binary into it with load_icode, and sets its env_type.
@@ -334,7 +407,7 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 // The new env's parent ID is set to 0.
 //
 void
-env_create(uint8_t *binary, size_t size, enum EnvType type)
+env_create(uint8_t *binary, size_t size, enum EnvType type, int staticnum )
 {
    int r;
    struct Env *e;
@@ -345,6 +418,8 @@ env_create(uint8_t *binary, size_t size, enum EnvType type)
    }
    load_icode(e, binary, size);
    e->env_type = type;
+   e->static_num = staticnum;
+   envsid[staticnum] = 1;
 }
 
 //
@@ -361,6 +436,7 @@ env_free(struct Env *e)
 	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 
 	// return the environment to the free list
+	envsid[e->static_num] = 0;
 	e->env_status = ENV_FREE;
 	e->env_link = env_free_list;
 	env_free_list = e;
@@ -394,14 +470,41 @@ env_destroy(struct Env *e)
 void
 csys_exit(void)
 {
+   in_intr = false;
 	env_destroy(curenv);
 }
 
 void
 csys_yield(struct Trapframe *tf)
 {
+   in_intr = false;
 	memcpy(&curenv->env_tf, tf, sizeof(struct Trapframe));
 	sched_yield();
+}
+
+void
+csys_write(struct Trapframe *tf)
+{
+   in_intr = false;
+   curenv->env_status = ENV_BLOCKING;
+   curenv->blocking_cycles = tf->tf_regs.reg_eax + 1;
+	memcpy(&curenv->env_tf, tf, sizeof(struct Trapframe));
+	sched_yield();
+}
+
+void
+csys_start(struct Trapframe *tf)
+{
+   in_intr = false;
+	memcpy(&curenv->env_tf, tf, sizeof(struct Trapframe));
+   env_start_again( tf->tf_regs.reg_eax );
+   env_run(curenv);
+}
+
+int
+env_getpid(void)
+{
+   return curenv->env_id;
 }
 
 //

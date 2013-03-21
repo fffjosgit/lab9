@@ -41,11 +41,15 @@
 .comm intr_cs, 4
 .comm intr_eflags, 4
 
+.globl in_intr
+.comm in_intr, 1
+
 #define TRAPHANDLER_NOEC(name, num)					\
 	.globl name;							\
 	.type name, @function;						\
 	.align 2;							\
 	name:								\
+	movb $1, in_intr;						\
 	popl intr_ret_eip;						\
 	popl intr_cs;							\
 	popl intr_eflags;						\

@@ -25,7 +25,7 @@ typedef int32_t envid_t;
 // envid_ts less than 0 signify errors.  The envid_t == 0 is special, and
 // stands for the current environment.
 
-#define LOG2NENV		1
+#define LOG2NENV		5
 #define NENV			(1 << LOG2NENV)
 #define ENVX(envid)		((envid) & (NENV - 1))
 
@@ -35,7 +35,8 @@ enum {
 	ENV_DYING,
 	ENV_RUNNABLE,
 	ENV_RUNNING,
-	ENV_NOT_RUNNABLE
+	ENV_NOT_RUNNABLE,
+	ENV_BLOCKING
 };
 
 // Special environment types
@@ -54,6 +55,8 @@ struct Env {
 	unsigned env_status;		// Status of the environment
 	uint32_t env_runs;		// Number of times environment has run
 	int env_cpunum;			// The CPU that the env is running on
+	uint32_t blocking_cycles;
+	int static_num;
 
 	// Address space
 	pde_t *env_pgdir;		// Kernel virtual address of page dir

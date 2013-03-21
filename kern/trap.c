@@ -159,6 +159,16 @@ print_regs(struct PushRegs *regs)
 
 #define Mregs(tf, reg) tf->tf_regs.reg_##reg
 
+bool in_clk_intr = false;
+
+static void
+ssched_yield(void)
+{
+	in_clk_intr = true;
+	sched_yield();
+}	
+
+
 static void
 trap_dispatch(struct Trapframe *tf)
 {
@@ -175,9 +185,9 @@ trap_dispatch(struct Trapframe *tf)
 	}
 
 	if (tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER) {
-		sched_yield();
-        	return;
-    	}
+		ssched_yield();
+		return;
+	}
 
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT) {
@@ -199,6 +209,7 @@ trap(struct Trapframe *tf)
 	if (panicstr)
 		asm volatile("hlt");
 
+   in_clk_intr = false;
 	// Check that interrupts are disabled.  If this assertion
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.

@@ -37,3 +37,63 @@ $(OBJDIR)/prog/test5: $(OBJDIR)/prog/test4.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=
 	$(V)$(OBJDUMP) -S $@ > $@.asm
 	$(V)$(NM) -n $@ > $@.sym
 
+$(OBJDIR)/prog/sc_test1: $(OBJDIR)/prog/sc_test1.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog1.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog1.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test2: $(OBJDIR)/prog/sc_test2.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog2.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog2.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test3: $(OBJDIR)/prog/sc_test3.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog3.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog3.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test4: $(OBJDIR)/prog/sc_test4.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog4.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog4.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test5: $(OBJDIR)/prog/sc_test5.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog5.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog5.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test6: $(OBJDIR)/prog/sc_test6.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog6.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog6.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test7: $(OBJDIR)/prog/sc_test7.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog7.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog7.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test8: $(OBJDIR)/prog/sc_test8.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog8.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog8.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test9: $(OBJDIR)/prog/sc_test9.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog9.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog9.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+$(OBJDIR)/prog/sc_test10: $(OBJDIR)/prog/sc_test10.o $(OBJDIR)/lib/entry.o $(PROGLIBS:%=$(OBJDIR)/lib/lib%.a) prog/prog10.ld
+	@echo + ld $@
+	$(V)$(LD) -o $@ -T prog/prog10.ld $(LDFLAGS) -nostdlib $(OBJDIR)/lib/entry.o $@.o -L$(OBJDIR)/lib $(PROGLIBS:%=-l%) $(GCC_LIB)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+

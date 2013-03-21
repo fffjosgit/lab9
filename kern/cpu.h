@@ -47,4 +47,18 @@ void lapic_startap(uint8_t apicid, uint32_t addr);
 void lapic_eoi(void);
 void lapic_ipi(int vector);
 
+extern char in_intr;
+extern bool in_clk_intr;
+
+static inline bool
+in_interrupt( void )
+{
+   return !!in_intr;
+}
+
+static inline bool
+in_clock_interrupt( void )
+{
+   return in_intr && in_clk_intr;
+}
 #endif
