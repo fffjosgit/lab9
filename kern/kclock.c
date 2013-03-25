@@ -5,7 +5,6 @@
 #include <inc/x86.h>
 #include <kern/kclock.h>
 
-
 unsigned
 mc146818_read(unsigned reg)
 {
@@ -24,6 +23,12 @@ void
 rtc_init(void)
 {
 	uint8_t prev;
+	uint8_t rate = 0x0F;
+
+	outb(IO_RTC_CMND, NMI_LOCK | RTC_AREG);
+	prev = inb(IO_RTC_DATA);
+	outb(IO_RTC_CMND, NMI_LOCK | RTC_AREG);
+	outb(IO_RTC_DATA, ( prev & 0xF0 ) | rate );
 
 	outb(IO_RTC_CMND, NMI_LOCK | RTC_BREG);
 	prev = inb(IO_RTC_DATA);
@@ -38,4 +43,3 @@ rtc_check_status(void)
 	outb(IO_RTC_CMND, RTC_CREG);
 	return inb(IO_RTC_DATA);
 }
-

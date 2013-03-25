@@ -6,6 +6,7 @@
 
 #include <kern/monitor.h>
 #include <kern/console.h>
+#include <kern/pmap.h>
 #include <kern/env.h>
 #include <kern/trap.h>
 #include <kern/sched.h>
@@ -30,11 +31,11 @@ i386_init(void)
 	cons_init();
 
 	cprintf("6828 decimal is %o octal!\n", 6828);
+
+        mem_init();
+
 	cprintf("END: %p\n", end);
 	cprintf("TEST1 START: %p\t END: %p\t SIZE: %d\n", _binary_obj_prog_test1_start, _binary_obj_prog_test1_end, ( int ) _binary_obj_prog_test1_size );
-	//cprintf("kernel_sym: %p\t END: %p\t SIZE: %d\n", _binary_obj_kern_kernel_pre_sym_start, _binary_obj_kern_kernel_pre_sym_end, (int) _binary_obj_kern_kernel_pre_sym_size );
-	_binary_obj_kern_kernel_pre_sym_end[0] = 0;
-	//cprintf("kernel_sym: %s\n", _binary_obj_kern_kernel_pre_sym_start);
 
 	// user environment initialization functions
 	env_init();
@@ -43,17 +44,16 @@ i386_init(void)
 
 	pic_init();
 	rtc_init();
+	irq_setmask_8259A(irq_mask_8259A & ~(1 << IRQ_TIMER));
 
 #if defined(TEST)
 	// Don't touch -- used by grading script!
 	//ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	//ENV_CREATE(prog_test3, ENV_TYPE_KERNEL);
-	//ENV_CREATE(prog_test1, ENV_TYPE_KERNEL);
+	ENV_CREATE(prog_test3, ENV_TYPE_KERNEL);
+	ENV_CREATE(prog_test1, ENV_TYPE_KERNEL);
 	//ENV_CREATE(prog_test2, ENV_TYPE_KERNEL);
-	ENV_CREATE(prog_test4, ENV_TYPE_KERNEL);
-	ENV_CREATE(prog_test5, ENV_TYPE_KERNEL);
 #endif // TEST*
 
 	// Schedule and run the first user environment!
