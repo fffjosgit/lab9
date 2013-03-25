@@ -35,7 +35,6 @@ i386_init(void)
         mem_init();
 
 	cprintf("END: %p\n", end);
-	cprintf("TEST1 START: %p\t END: %p\t SIZE: %d\n", _binary_obj_prog_test1_start, _binary_obj_prog_test1_end, ( int ) _binary_obj_prog_test1_size );
 
 	// user environment initialization functions
 	env_init();
@@ -44,7 +43,6 @@ i386_init(void)
 
 	pic_init();
 	rtc_init();
-	irq_setmask_8259A(irq_mask_8259A & ~(1 << IRQ_TIMER));
 
 #if defined(TEST)
 	// Don't touch -- used by grading script!
