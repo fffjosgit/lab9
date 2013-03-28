@@ -103,7 +103,7 @@ boot_alloc(uint32_t n)
 		panic("boot_alloc: Out of memory\n");
 	}
 	result = nextfree;
-	nextfree = ROUNDUP(nextfree + n, PGSIZE)
+	nextfree = ROUNDUP(nextfree + n, PGSIZE);
 	
 	return result;
 }
@@ -149,8 +149,11 @@ mem_init(void)
 	// each physical page, there is a corresponding struct PageInfo in this
 	// array.  'npages' is the number of physical pages in memory.
 	// Your code goes here:
-
-
+	size_t i;
+	for(i = 0; i < npages; i++)
+	{
+		pages[i] = boot_alloc((uint32_t)PGSIZE);
+	}
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
 	// up the list of free physical pages. Once we've done so, all further
