@@ -149,10 +149,11 @@ mem_init(void)
 	// each physical page, there is a corresponding struct PageInfo in this
 	// array.  'npages' is the number of physical pages in memory.
 	// Your code goes here:
+	// <!!!!!!!!!!!!!!!!!!!!!!!!!!>
 	size_t i;
 	for(i = 0; i < npages; i++)
 	{
-		pages[i] = boot_alloc((uint32_t)PGSIZE);
+		pages[i] = boot_alloc(PGSIZE);
 	}
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -254,7 +255,7 @@ page_init(void)
 	//
 	// Change the code to reflect this.
 	// NB: DO NOT actually touch the physical memory corresponding to
-	// free pages!
+	// free pages!<!!!!!!!!!!!!!!!!!!!!!!!!!!>
 	size_t i;
 	for (i = 0; i < npages; i++) {
 		pages[i].pp_ref = 0;
