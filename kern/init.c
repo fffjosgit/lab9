@@ -18,7 +18,7 @@ void
 i386_init(void)
 {
 	extern char edata[], end[];
-	extern uint8_t _binary_obj_prog_test1_start[], _binary_obj_prog_test1_end[], _binary_obj_prog_test1_size[];
+	extern uint8_t _binary_obj_prog_sc_test1_start[], _binary_obj_prog_sc_test1_end[], _binary_obj_prog_sc_test1_size[];
 	extern uint8_t _binary_obj_kern_kernel_pre_sym_start[], _binary_obj_kern_kernel_pre_sym_end[], _binary_obj_kern_kernel_pre_sym_size[];
 
 	// Before doing anything else, complete the ELF loading process.
@@ -35,6 +35,10 @@ i386_init(void)
         mem_init();
 
 	cprintf("END: %p\n", end);
+	cprintf("TEST1 START: %p\t END: %p\t SIZE: 0x%x\n", _binary_obj_prog_sc_test1_start, _binary_obj_prog_sc_test1_end, ( int ) _binary_obj_prog_sc_test1_size );
+	//cprintf("kernel_sym: %p\t END: %p\t SIZE: %d\n", _binary_obj_kern_kernel_pre_sym_start, _binary_obj_kern_kernel_pre_sym_end, (int) _binary_obj_kern_kernel_pre_sym_size );
+	_binary_obj_kern_kernel_pre_sym_end[0] = 0;
+	//cprintf("kernel_sym: %s\n", _binary_obj_kern_kernel_pre_sym_start);
 
 	// user environment initialization functions
 	env_init();
@@ -49,9 +53,16 @@ i386_init(void)
 	//ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	ENV_CREATE(prog_test3, ENV_TYPE_KERNEL);
-	ENV_CREATE(prog_test1, ENV_TYPE_KERNEL);
-	//ENV_CREATE(prog_test2, ENV_TYPE_KERNEL);
+	ENV_CREATE(prog_sc_test1, ENV_TYPE_KERNEL, 1);
+	ENV_CREATE(prog_sc_test2, ENV_TYPE_KERNEL, 2);
+	ENV_CREATE(prog_sc_test3, ENV_TYPE_KERNEL, 3);
+	//ENV_CREATE(prog_sc_test4, ENV_TYPE_KERNEL, 4);
+	//ENV_CREATE(prog_sc_test5, ENV_TYPE_KERNEL, 5);
+	ENV_CREATE(prog_sc_test6, ENV_TYPE_KERNEL, 6);
+	ENV_CREATE(prog_sc_test7, ENV_TYPE_KERNEL, 7);
+	ENV_CREATE(prog_sc_test8, ENV_TYPE_KERNEL, 8);
+	ENV_CREATE(prog_sc_test9, ENV_TYPE_KERNEL, 9);
+	ENV_CREATE(prog_sc_test10, ENV_TYPE_KERNEL, 10);
 #endif // TEST*
 
 	// Schedule and run the first user environment!

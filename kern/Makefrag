@@ -41,11 +41,17 @@ KERN_SRCFILES +=       kern/mpconfig.c \
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
 
 # Binary program images to embed within the kernel.
-KERN_BINFILES :=	prog/test1 \
-			prog/test2 \
-			prog/test3 \
-			prog/test4 \
-			prog/test5
+KERN_BINFILES :=	prog/sc_test1 \
+                  	prog/sc_test2 \
+			prog/sc_test3 \
+			prog/sc_test4 \
+			prog/sc_test5 \
+			prog/sc_test6 \
+			prog/sc_test7 \
+			prog/sc_test8 \
+			prog/sc_test9 \
+			prog/sc_test10
+
 
 KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(KERN_OBJFILES))

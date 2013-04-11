@@ -7,6 +7,20 @@
 
 void sched_halt(void);
 
+void perform_io_simulation( void )
+{
+	if ( in_clock_interrupt() ) {
+		int i;
+		for(i = 0; i < NENV; ++i) {
+			if (envs[i].env_status == ENV_BLOCKING) {
+				if (!(--envs[i].blocking_cycles))
+					envs[i].env_status = ENV_RUNNABLE;
+			}
+		}
+	}
+}
+
+
 // Choose a user environment to run and run it.
 void
 sched_yield(void)
@@ -34,6 +48,8 @@ sched_yield(void)
 	uint32_t next_envid;
 	int i;
 
+	perform_io_simulation();
+
 	for (i = 0; i < NENV; i++) {
 		next_envid = (first_eid+i) % NENV;
 		if (envs[next_envid].env_status == ENV_RUNNABLE) {
@@ -54,6 +70,13 @@ void
 sched_halt(void)
 {
 	int i;
+
+	for(i = 0; i < NENV; ++i) {
+		if (envs[i].env_status == ENV_BLOCKING) {
+			envs[i].env_status = ENV_RUNNABLE;
+			sched_yield();
+		}
+	}
 
 	// For debugging and testing purposes, if there are no runnable
 	// environments in the system, then drop into the kernel monitor.
