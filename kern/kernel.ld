@@ -16,7 +16,7 @@ SECTIONS
 		*(.text .stub .text.* .gnu.linkonce.t.*)
 	}
 
-	etext = .;	/* Define the 'etext' symbol to this value */
+	PROVIDE(etext = .);	/* Define the 'etext' symbol to this value */
 
 	.rodata : {
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
@@ -47,13 +47,13 @@ SECTIONS
 		*(.data)
 	}
 
-	edata = .;
+	PROVIDE(edata = .);
 
 	.bss : {
 		*(.bss)
 	}
 
-	end = .;
+	PROVIDE(end = .);
 
 	/DISCARD/ : {
 		*(.eh_frame .note.GNU-stack)

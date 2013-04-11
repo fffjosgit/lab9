@@ -8,19 +8,16 @@
 #include <inc/elf.h>
 
 #include <kern/env.h>
+#include <kern/pmap.h>
 #include <kern/trap.h>
 #include <kern/monitor.h>
-#include <kern/sched.h>
-#include <kern/cpu.h>
 
-struct Env env_array[NENV];
-struct Env *envs = env_array;		// All environments
+struct Env *envs = NULL;		// All environments
+struct Env *curenv = NULL;		// The current env
 static struct Env *env_free_list;	// Free environment list
 					// (linked by Env->env_link)
 
 #define ENVGENSHIFT	12		// >= LOGNENV
-
-extern unsigned int bootstacktop;
 
 // Global descriptor table.
 //
@@ -37,7 +34,7 @@ extern unsigned int bootstacktop;
 // definition of gdt specifies the Descriptor Privilege Level (DPL)
 // of that descriptor: 0 for kernel and 3 for user.
 //
-struct Segdesc gdt[NCPU + 5] =
+struct Segdesc gdt[] =
 {
 	// 0x0 - unused (always faults -- for trapping NULL far pointers)
 	SEG_NULL,
@@ -54,8 +51,7 @@ struct Segdesc gdt[NCPU + 5] =
 	// 0x20 - user data segment
 	[GD_UD >> 3] = SEG(STA_W, 0x0, 0xffffffff, 3),
 
-	// Per-CPU TSS descriptors (starting from GD_TSS0) are initialized
-	// in trap_init_percpu()
+	// 0x28 - tss, initialized in trap_init_percpu()
 	[GD_TSS0 >> 3] = SEG_NULL
 };
 
@@ -119,26 +115,8 @@ void
 env_init(void)
 {
 	// Set up envs array
-	// LAB 2: Your code here.
-	int i;
-	for(i = 0; i < NENV; i++) {
-	    envs[i].env_id = 0;
-	    envs[i].env_parent_id = 0;
-	    envs[i].env_type= ENV_TYPE_KERNEL;
-	    envs[i].env_status = 0;
-	    envs[i].env_runs = 0;
-	    envs[i].env_pgdir = NULL;
-	
-	    if (i == 0) {
-		    env_free_list = &envs[0];
-	    } else {
-		    envs[i-1].env_link = &envs[i];
-		    if (i == NENV - 1) {
-			    envs[i].env_link = NULL;
-		    }
-	    }
-	}
-	
+	// LAB 3: Your code here.
+
 	// Per-CPU part of the initialization
 	env_init_percpu();
 }
@@ -165,6 +143,51 @@ env_init_percpu(void)
 }
 
 //
+// Initialize the kernel virtual memory layout for environment e.
+// Allocate a page directory, set e->env_pgdir accordingly,
+// and initialize the kernel portion of the new environment's address space.
+// Do NOT (yet) map anything into the user portion
+// of the environment's virtual address space.
+//
+// Returns 0 on success, < 0 on error.  Errors include:
+//	-E_NO_MEM if page directory or table could not be allocated.
+//
+static int
+env_setup_vm(struct Env *e)
+{
+	int i;
+	struct PageInfo *p = NULL;
+
+	// Allocate a page for the page directory
+	if (!(p = page_alloc(ALLOC_ZERO)))
+		return -E_NO_MEM;
+
+	// Now, set e->env_pgdir and initialize the page directory.
+	//
+	// Hint:
+	//    - The VA space of all envs is identical above UTOP
+	//	(except at UVPT, which we've set below).
+	//	See inc/memlayout.h for permissions and layout.
+	//	Can you use kern_pgdir as a template?  Hint: Yes.
+	//	(Make sure you got the permissions right in Lab 2.)
+	//    - The initial VA below UTOP is empty.
+	//    - You do not need to make any more calls to page_alloc.
+	//    - Note: In general, pp_ref is not maintained for
+	//	physical pages mapped only above UTOP, but env_pgdir
+	//	is an exception -- you need to increment env_pgdir's
+	//	pp_ref for env_free to work correctly.
+	//    - The functions in kern/pmap.h are handy.
+
+	// LAB 3: Your code here.
+
+	// UVPT maps the env's own page table read-only.
+	// Permissions: kernel R, user R
+	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_P | PTE_U;
+
+	return 0;
+}
+
+//
 // Allocates and initializes a new environment.
 // On success, the new environment is stored in *newenv_store.
 //
@@ -179,9 +202,12 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	int r;
 	struct Env *e;
 
-	if (!(e = env_free_list)) {
+	if (!(e = env_free_list))
 		return -E_NO_FREE_ENV;
-	}
+
+	// Allocate and set up the page directory for this environment.
+	if ((r = env_setup_vm(e)) < 0)
+		return r;
 
 	// Generate an env_id for this environment.
 	generation = (e->env_id + (1 << ENVGENSHIFT)) & ~(NENV - 1);
@@ -191,7 +217,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	// Set the basic status variables.
 	e->env_parent_id = parent_id;
-	e->env_type = ENV_TYPE_KERNEL;
+	e->env_type = ENV_TYPE_USER;
 	e->env_status = ENV_RUNNABLE;
 	e->env_runs = 0;
 
@@ -217,7 +243,11 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	e->env_tf.tf_cs = GD_KT | 0;
 	// You will set e->env_tf.tf_eip later.
 
-	e->env_tf.tf_eflags |= FL_IF;
+	e->env_tf.tf_ds = GD_UD | 3;
+	e->env_tf.tf_es = GD_UD | 3;
+	e->env_tf.tf_ss = GD_UD | 3;
+	e->env_tf.tf_esp = USTACKTOP;
+	e->env_tf.tf_cs = GD_UT | 3;
 
 	// commit the allocation
 	env_free_list = e->env_link;
@@ -237,12 +267,13 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 static void
 region_alloc(struct Env *e, void *va, size_t len)
 {
+	// LAB 3: Your code here.
+	// (But only if you need it for load_icode.)
+	//
 	// Hint: It is easier to use region_alloc if the caller can pass
 	//   'va' and 'len' values that are not page-aligned.
 	//   You should round va down, and round (va + len) up.
 	//   (Watch out for corner-cases!)
-
-	panic("region_alloc is not yet implemented.\n");
 }
 
 //
@@ -270,7 +301,7 @@ region_alloc(struct Env *e, void *va, size_t len)
 extern void (*sys_exit)(void);
 extern void (*sys_yield)(void);
 static void
-load_icode(struct Env *e, uint8_t *binary, size_t size)
+old_load_icode(struct Env *e, uint8_t *binary, size_t size)
 {
 	// Hints:
 	//  Load each program segment into virtual memory
@@ -326,77 +357,43 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 	*/
 }
 
-int envsid[10];
-
-void
-env_start_again( uint32_t num )
+static void
+load_icode(struct Env *e, uint8_t *binary, size_t size)
 {
-	uint8_t *binary = NULL;
-	size_t size = 0;
-	ENV_EXTERN(prog_sc_test1)
-	ENV_EXTERN(prog_sc_test2)
-	ENV_EXTERN(prog_sc_test3)
-	ENV_EXTERN(prog_sc_test4)
-	ENV_EXTERN(prog_sc_test5)
-	ENV_EXTERN(prog_sc_test6)
-	ENV_EXTERN(prog_sc_test7)
-	ENV_EXTERN(prog_sc_test8)
-	ENV_EXTERN(prog_sc_test9)
-	ENV_EXTERN(prog_sc_test10)
+	// Hints:
+	//  Load each program segment into virtual memory
+	//  at the address specified in the ELF section header.
+	//  You should only load segments with ph->p_type == ELF_PROG_LOAD.
+	//  Each segment's virtual address can be found in ph->p_va
+	//  and its size in memory can be found in ph->p_memsz.
+	//  The ph->p_filesz bytes from the ELF binary, starting at
+	//  'binary + ph->p_offset', should be copied to virtual address
+	//  ph->p_va.  Any remaining memory bytes should be cleared to zero.
+	//  (The ELF header should have ph->p_filesz <= ph->p_memsz.)
+	//  Use functions from the previous lab to allocate and map pages.
+	//
+	//  All page protection bits should be user read/write for now.
+	//  ELF segments are not necessarily page-aligned, but you can
+	//  assume for this function that no two segments will touch
+	//  the same virtual page.
+	//
+	//  You may find a function like region_alloc useful.
+	//
+	//  Loading the segments is much simpler if you can move data
+	//  directly into the virtual addresses stored in the ELF binary.
+	//  So which page directory should be in force during
+	//  this function?
+	//
+	//  You must also do something with the program's entry point,
+	//  to make sure that the environment starts executing there.
+	//  What?  (See env_run() and env_pop_tf() below.)
 
-	if ( envsid[num] ) {
-		return;
-	}
+	// LAB 3: Your code here.
 
-	switch (num) {
-	case 1:
-		binary = ENV_START(prog_sc_test1);
-		size = (int) ENV_SIZE(prog_sc_test1);
-		break;
-	case 2:
-		binary = ENV_START(prog_sc_test2);
-		size = (int) ENV_SIZE(prog_sc_test2);
-		break;
-	case 3:
-		binary = ENV_START(prog_sc_test3);
-		size = (int) ENV_SIZE(prog_sc_test3);
-		break;
-	case 4:
-		binary = ENV_START(prog_sc_test4);
-		size = (int) ENV_SIZE(prog_sc_test4);
-		break;
-	case 5:
-		binary = ENV_START(prog_sc_test5);
-		size = (int) ENV_SIZE(prog_sc_test5);
-		break;
-	case 6:
-		binary = ENV_START(prog_sc_test6);
-		size = (int) ENV_SIZE(prog_sc_test6);
-		break;
-	case 7:
-		binary = ENV_START(prog_sc_test7);
-		size = (int) ENV_SIZE(prog_sc_test7);
-		break;
-	case 8:
-		binary = ENV_START(prog_sc_test8);
-		size = (int) ENV_SIZE(prog_sc_test8);
-		break;
-	case 9:
-		binary = ENV_START(prog_sc_test9);
-		size = (int) ENV_SIZE(prog_sc_test9);
-		break;
-	case 10:
-		binary = ENV_START(prog_sc_test10);
-		size = (int) ENV_SIZE(prog_sc_test10);
-		break;
-	default:
-		binary = ENV_START(prog_sc_test1);
-		size = (int) ENV_SIZE(prog_sc_test1);
-		num = 1;
-		break;
-	}
+	// Now map one page for the program's initial stack
+	// at virtual address USTACKTOP - PGSIZE.
 
-	env_create(binary, size, ENV_TYPE_KERNEL, num);
+	// LAB 3: Your code here.
 }
 
 //
@@ -407,19 +404,9 @@ env_start_again( uint32_t num )
 // The new env's parent ID is set to 0.
 //
 void
-env_create(uint8_t *binary, size_t size, enum EnvType type, int staticnum )
+env_create(uint8_t *binary, size_t size, enum EnvType type )
 {
-   int r;
-   struct Env *e;
-   r = env_alloc(&e, 0);
-   if (r < 0) {
-           panic("env_create: %e\n", r);
-           return;
-   }
-   load_icode(e, binary, size);
-   e->env_type = type;
-   e->static_num = staticnum;
-   envsid[staticnum] = 1;
+	// LAB 3: Your code here.
 }
 
 //
@@ -432,11 +419,44 @@ env_free(struct Env *e)
 	uint32_t pdeno, pteno;
 	physaddr_t pa;
 
+	// If freeing the current environment, switch to kern_pgdir
+	// before freeing the page directory, just in case the page
+	// gets reused.
+	if (e == curenv)
+		lcr3(PADDR(kern_pgdir));
+
 	// Note the environment's demise.
 	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 
+	// Flush all mapped pages in the user portion of the address space
+	static_assert(UTOP % PTSIZE == 0);
+	for (pdeno = 0; pdeno < PDX(UTOP); pdeno++) {
+
+		// only look at mapped page tables
+		if (!(e->env_pgdir[pdeno] & PTE_P))
+			continue;
+
+		// find the pa and va of the page table
+		pa = PTE_ADDR(e->env_pgdir[pdeno]);
+		pt = (pte_t*) KADDR(pa);
+
+		// unmap all PTEs in this page table
+		for (pteno = 0; pteno <= PTX(~0); pteno++) {
+			if (pt[pteno] & PTE_P)
+				page_remove(e->env_pgdir, PGADDR(pdeno, pteno, 0));
+		}
+
+		// free the page table itself
+		e->env_pgdir[pdeno] = 0;
+		page_decref(pa2page(pa));
+	}
+
+	// free the page directory
+	pa = PADDR(e->env_pgdir);
+	e->env_pgdir = 0;
+	page_decref(pa2page(pa));
+
 	// return the environment to the free list
-	envsid[e->static_num] = 0;
 	e->env_status = ENV_FREE;
 	e->env_link = env_free_list;
 	env_free_list = e;
@@ -444,68 +464,17 @@ env_free(struct Env *e)
 
 //
 // Frees environment e.
-// If e was the current env, then runs a new environment (and does not return
-// to the caller).
 //
 void
 env_destroy(struct Env *e)
 {
-	// If e is currently running on other CPUs, we change its state to
-	// ENV_DYING. A zombie environment will be freed the next time
-	// it traps to the kernel.
-	if (e->env_status == ENV_RUNNING && curenv != e) {
-		e->env_status = ENV_DYING;
-		return;
-	}
-
 	env_free(e);
 
-	if (curenv == e) {
-		curenv = NULL;
-		sched_yield();
-	}
+	cprintf("Destroyed the only environment - nothing more to do!\n");
+	while (1)
+		monitor(NULL);
 }
 
-
-void
-csys_exit(void)
-{
-   in_intr = false;
-	env_destroy(curenv);
-}
-
-void
-csys_yield(struct Trapframe *tf)
-{
-   in_intr = false;
-	memcpy(&curenv->env_tf, tf, sizeof(struct Trapframe));
-	sched_yield();
-}
-
-void
-csys_write(struct Trapframe *tf)
-{
-   in_intr = false;
-   curenv->env_status = ENV_BLOCKING;
-   curenv->blocking_cycles = tf->tf_regs.reg_eax + 1;
-	memcpy(&curenv->env_tf, tf, sizeof(struct Trapframe));
-	sched_yield();
-}
-
-void
-csys_start(struct Trapframe *tf)
-{
-   in_intr = false;
-	memcpy(&curenv->env_tf, tf, sizeof(struct Trapframe));
-   env_start_again( tf->tf_regs.reg_eax );
-   env_run(curenv);
-}
-
-int
-env_getpid(void)
-{
-   return curenv->env_id;
-}
 
 //
 // Restores the register values in the Trapframe with the 'iret' instruction.
@@ -516,37 +485,19 @@ env_getpid(void)
 void
 env_pop_tf(struct Trapframe *tf)
 {
-	// Record the CPU we are running on for user-space debugging
-	curenv->env_cpunum = cpunum();
+	__asm __volatile("movl %0,%%esp\n"
+		"\tpopal\n"
+		"\tpopl %%es\n"
+		"\tpopl %%ds\n"
+		"\taddl $0x8,%%esp\n" /* skip tf_trapno and tf_errcode */
+		"\tiret"
+		: : "g" (tf) : "memory");
+	panic("iret failed");  /* mostly to placate the compiler */
+}
 
-        asm volatile (
-                "mov %c[ebx](%[tf]), %%ebx \n\t"
-                "mov %c[ecx](%[tf]), %%ecx \n\t"
-                "mov %c[edx](%[tf]), %%edx \n\t"
-                "mov %c[esi](%[tf]), %%esi \n\t"
-                "mov %c[edi](%[tf]), %%edi \n\t"
-                "mov %c[ebp](%[tf]), %%ebp \n\t"
-                "mov %c[esp](%[tf]), %%esp \n\t"
-		"pushl %c[eip](%[tf])	   \n\t"
-                "pushl %c[eflags](%[tf])   \n\t"
-		"mov %c[eax](%[tf]), %%eax \n\t"
-		"popfl			   \n\t"
-		"ret			   \n\t"
-		:
-		: [tf]"a"(tf),
-		  [eip]"i"(offsetof(struct Trapframe, tf_eip)),
-		  [eax]"i"(offsetof(struct Trapframe, tf_regs.reg_eax)),
-		  [ebx]"i"(offsetof(struct Trapframe, tf_regs.reg_ebx)),
-		  [ecx]"i"(offsetof(struct Trapframe, tf_regs.reg_ecx)),
-		  [edx]"i"(offsetof(struct Trapframe, tf_regs.reg_edx)),
-		  [esi]"i"(offsetof(struct Trapframe, tf_regs.reg_esi)),
-		  [edi]"i"(offsetof(struct Trapframe, tf_regs.reg_edi)),
-		  [ebp]"i"(offsetof(struct Trapframe, tf_regs.reg_ebp)),
-		  [eflags]"i"(offsetof(struct Trapframe, tf_eflags)),
-//		  [esp]"i"(offsetof(struct Trapframe, tf_regs.reg_oesp))
-		  [esp]"i"(offsetof(struct Trapframe, tf_esp))
-		: "cc", "memory", "ebx", "ecx", "edx", "esi", "edi" );
-	panic("BUG");  /* mostly to placate the compiler */
+void csys_exit(void)
+{
+	for(;;){}
 }
 
 //
@@ -575,12 +526,8 @@ env_run(struct Env *e)
 	//	and make sure you have set the relevant parts of
 	//	e->env_tf to sensible values.
 
-   if (curenv && curenv->env_status == ENV_RUNNING)
-           curenv->env_status = ENV_RUNNABLE;
+	// LAB 3: Your code here.
 
-   curenv = e;
-   e->env_status = ENV_RUNNING;
-   e->env_runs++;
-   env_pop_tf(&(e->env_tf));
+	panic("env_run not yet implemented");
 }
 

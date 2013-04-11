@@ -20,8 +20,8 @@
 .globl _start
 _start:
 	// See if we were started with arguments on the stack
-	//cmpl $USTACKTOP, %esp
-	//jne args_exist
+	cmpl $USTACKTOP, %esp
+	jne args_exist
 
 	// If not, push dummy argc/argv arguments.
 	// This happens when we are loaded by the kernel,

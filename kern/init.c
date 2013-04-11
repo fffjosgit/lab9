@@ -7,19 +7,20 @@
 #include <kern/monitor.h>
 #include <kern/console.h>
 #include <kern/pmap.h>
+#include <kern/kclock.h>
 #include <kern/env.h>
 #include <kern/trap.h>
-#include <kern/sched.h>
-#include <kern/cpu.h>
 #include <kern/picirq.h>
-#include <kern/kclock.h>
+
+
+static void rtc_init(void)
+{
+}
 
 void
 i386_init(void)
 {
 	extern char edata[], end[];
-	extern uint8_t _binary_obj_prog_sc_test1_start[], _binary_obj_prog_sc_test1_end[], _binary_obj_prog_sc_test1_size[];
-	extern uint8_t _binary_obj_kern_kernel_pre_sym_start[], _binary_obj_kern_kernel_pre_sym_end[], _binary_obj_kern_kernel_pre_sym_size[];
 
 	// Before doing anything else, complete the ELF loading process.
 	// Clear the uninitialized global data (BSS) section of our program.
@@ -32,25 +33,20 @@ i386_init(void)
 
 	cprintf("6828 decimal is %o octal!\n", 6828);
 
-        mem_init();
+	// Lab 2 memory management initialization functions
+	mem_init();
 
-	cprintf("END: %p\n", end);
-	cprintf("TEST1 START: %p\t END: %p\t SIZE: 0x%x\n", _binary_obj_prog_sc_test1_start, _binary_obj_prog_sc_test1_end, ( int ) _binary_obj_prog_sc_test1_size );
-	//cprintf("kernel_sym: %p\t END: %p\t SIZE: %d\n", _binary_obj_kern_kernel_pre_sym_start, _binary_obj_kern_kernel_pre_sym_end, (int) _binary_obj_kern_kernel_pre_sym_size );
-	_binary_obj_kern_kernel_pre_sym_end[0] = 0;
-	//cprintf("kernel_sym: %s\n", _binary_obj_kern_kernel_pre_sym_start);
-
-	// user environment initialization functions
+	// Lab 3 user environment initialization functions
 	env_init();
-	
+	if (0) {
 	trap_init();
 
 	pic_init();
 	rtc_init();
-
+	}
 #if defined(TEST)
 	// Don't touch -- used by grading script!
-	//ENV_CREATE(TEST, ENV_TYPE_USER);
+	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
 	ENV_CREATE(prog_sc_test1, ENV_TYPE_KERNEL, 1);
@@ -63,10 +59,12 @@ i386_init(void)
 	ENV_CREATE(prog_sc_test8, ENV_TYPE_KERNEL, 8);
 	ENV_CREATE(prog_sc_test9, ENV_TYPE_KERNEL, 9);
 	ENV_CREATE(prog_sc_test10, ENV_TYPE_KERNEL, 10);
+
+	NEW_ENV_CREATE(user_hello, ENV_TYPE_USER);
 #endif // TEST*
 
-	// Schedule and run the first user environment!
-	sched_yield();
+	// We only have one user environment for now, so just run it.
+	env_run(&envs[0]);
 }
 
 

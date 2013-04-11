@@ -1,20 +1,15 @@
 OBJDIRS += lib
 
-LIB_SRCFILES :=					lib/libmain.c \
+LIB_SRCFILES :=		lib/console.c \
+			lib/libmain.c \
 			lib/exit.c \
-#lib/console.c \
-#			lib/panic.c \
-#			lib/printf.c \
+			lib/panic.c \
+			lib/printf.c \
 			lib/printfmt.c \
-#			lib/readline.c \
-			lib/string.c
-#			lib/syscall.c
+			lib/readline.c \
+			lib/string.c \
+			lib/syscall.c
 
-#LIB_SRCFILES :=		$(LIB_SRCFILES) \
-#			lib/pgfault.c \
-#			lib/pfentry.S \
-#			lib/fork.c \
-#			lib/ipc.c
 
 
 

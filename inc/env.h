@@ -25,7 +25,7 @@ typedef int32_t envid_t;
 // envid_ts less than 0 signify errors.  The envid_t == 0 is special, and
 // stands for the current environment.
 
-#define LOG2NENV		5
+#define LOG2NENV		10
 #define NENV			(1 << LOG2NENV)
 #define ENVX(envid)		((envid) & (NENV - 1))
 
@@ -41,9 +41,7 @@ enum {
 
 // Special environment types
 enum EnvType {
-   ENV_TYPE_IDLE = 0,
-   ENV_TYPE_KERNEL,
-	ENV_TYPE_USER
+	ENV_TYPE_USER = 0,
 };
 
 struct Env {
@@ -54,13 +52,9 @@ struct Env {
 	enum EnvType env_type;		// Indicates special system environments
 	unsigned env_status;		// Status of the environment
 	uint32_t env_runs;		// Number of times environment has run
-	int env_cpunum;			// The CPU that the env is running on
-	uint32_t blocking_cycles;
-	int static_num;
 
 	// Address space
 	pde_t *env_pgdir;		// Kernel virtual address of page dir
-
 };
 
 #endif // !JOS_INC_ENV_H
