@@ -4,6 +4,7 @@
 #include <inc/memlayout.h>
 #include <inc/trap.h>
 
+#include <kern/picirq.h>
 
 
 ###################################################################
@@ -40,6 +41,9 @@
 	pushl $0;							\
 	pushl $(num);							\
 	jmp _alltraps
+
+.globl in_intr
+.comm in_intr, 1
 
 .text
 

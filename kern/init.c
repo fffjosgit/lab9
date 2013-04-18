@@ -10,7 +10,10 @@
 #include <kern/kclock.h>
 #include <kern/env.h>
 #include <kern/trap.h>
+#include <kern/sched.h>
 #include <kern/picirq.h>
+#include <kern/cpu.h>
+#include <kern/spinlock.h>
 
 
 static void rtc_init(void)
@@ -60,11 +63,12 @@ i386_init(void)
 	ENV_CREATE(prog_sc_test9, ENV_TYPE_KERNEL, 9);
 	ENV_CREATE(prog_sc_test10, ENV_TYPE_KERNEL, 10);
 
-	NEW_ENV_CREATE(user_hello, ENV_TYPE_USER);
+	NEW_ENV_CREATE(user_primes, ENV_TYPE_USER);
 #endif // TEST*
 
 	// We only have one user environment for now, so just run it.
-	env_run(&envs[0]);
+	sched_yield();
+
 }
 
 

@@ -9,9 +9,7 @@
 #include <inc/env.h>
 #include <inc/stdio.h>
 #include <kern/cpu.h>
-//#include <kern/pmap.h>
-
-#define KADDR(pa) (void *) (KERNBASE + (pa))
+#include <kern/pmap.h>
 
 physaddr_t lapicaddr = 0;        // Initialized in mpconfig.c
 
@@ -110,7 +108,7 @@ mpsearch(void)
 	uint32_t p;
 	struct mp *mp;
 
-//	static_assert(sizeof(*mp) == 16);
+	static_assert(sizeof(*mp) == 16);
 
 	// The BIOS data area lives in 16-bit segment 0x40.
 	bda = (uint8_t *) KADDR(0x40 << 4);
@@ -180,8 +178,8 @@ mp_init(void)
 	if ((conf = mpconfig(&mp)) == 0)
 		return;
 
-	ismp = 0;
-	i = conf->entry;
+			ismp = 0;
+			i = conf->entry;
 
 	bootcpu->cpu_status = CPU_STARTED;
 	if (!ismp) {

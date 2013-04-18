@@ -1,8 +1,8 @@
 #include <inc/assert.h>
 #include <inc/x86.h>
-//#include <kern/spinlock.h>
+#include <kern/spinlock.h>
 #include <kern/env.h>
-//#include <kern/pmap.h>
+#include <kern/pmap.h>
 #include <kern/monitor.h>
 
 void sched_halt(void);
@@ -93,11 +93,15 @@ sched_halt(void)
 
 	// Mark that no environment is running on this CPU
 	curenv = NULL;
+	lcr3(PADDR(kern_pgdir));
 
 	// Mark that this CPU is in the HALT state, so that when
 	// timer interupts come in, we know we should re-acquire the
 	// big kernel lock
 	xchg(&thiscpu->cpu_status, CPU_HALTED);
+
+	// Release the big kernel lock as if we were "leaving" the kernel
+	unlock_kernel();
 
 	// Reset stack pointer, enable interrupts and then halt.
 	asm volatile (

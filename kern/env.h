@@ -4,9 +4,10 @@
 #define JOS_KERN_ENV_H
 
 #include <inc/env.h>
+#include <kern/cpu.h>
 
 extern struct Env *envs;		// All environments
-extern struct Env *curenv;		// Current environment
+#define curenv (thiscpu->cpu_env)		// Current environment
 extern struct Segdesc gdt[];
 
 void	env_init(void);
@@ -39,7 +40,7 @@ void	env_pop_tf(struct Trapframe *tf) __attribute__((noreturn));
 			ENV_PASTE3(_binary_obj_, x, _size)[];		\
 		env_create(ENV_PASTE3(_binary_obj_, x, _start),		\
 			   (int)ENV_PASTE3(_binary_obj_, x, _size),	\
-			   type );					\
+			   type);					\
 	} while (0)
 
 #endif // !JOS_KERN_ENV_H
