@@ -28,9 +28,9 @@ KERN_SRCFILES :=	kern/entry.S \
 			kern/syscall.c \
 			kern/kdebug.c \
 			kern/sched.c \
-			kern/lapic.c \
-			kern/mpconfig.c \
-			kern/mpentry.S \
+			#kern/lapic.c \
+			#kern/mpconfig.c \
+			#kern/mpentry.S \
 			lib/printfmt.c \
 			lib/readline.c \
 			lib/string.c
