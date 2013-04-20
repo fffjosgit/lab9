@@ -21,6 +21,8 @@ static void rtc_init(void)
 {
 }
 
+static void boot_aps(void);
+
 void
 i386_init(void)
 {
