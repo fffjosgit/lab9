@@ -161,8 +161,9 @@ sys_env_set_pgfault_upcall(envid_t envid, void *func)
         return ret;
 	}
 
+	user_mem_assert(e, func, 4, 0);
 	task->env_pgfault_upcall = func;
-	
+			
 	return 0;
 
 	//panic("sys_env_set_pgfault_upcall not implemented");
@@ -205,7 +206,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 		return -E_INVAL;
 	}
 	
-	if(((unsigned int)va >= UTOP) || (va != ROUNDUP(va, PGSIZE))) {
+	if(((unsigned int)va >= UTOP) || (va % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
@@ -222,6 +223,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 		return -E_NO_MEM;
 	}
 
+	//cprintf("alloc page: [%08x].\n", page2pa(page));
 	return 0;
 	
 	// LAB 4: Your code here.
@@ -261,11 +263,11 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	pte_t *srcpte = 0;
 	int ret = 0;
 
-	if(((unsigned int)srcva >= UTOP) || (srcva != ROUNDUP(srcva, PGSIZE))) {
+	if(((unsigned int)srcva >= UTOP) || (srcva % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
-	if(((unsigned int)dstva >= UTOP) || (dstva != ROUNDUP(dstva, PGSIZE))) {
+	if(((unsigned int)dstva >= UTOP) || (dstva % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
@@ -279,11 +281,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
 
     if((ret = envid2env(srcenvid, &srcenv, 1)) < 0) {
         return ret;
-	}
-
-    if((ret = envid2env(dstenvid, &dstenv, 1)) < 0) {
-        return ret;
-	}
+	}    
 
     if(!(pp = page_lookup(srcenv->env_pgdir, srcva, &srcpte))) {
         return -E_NO_MEM;
@@ -293,9 +291,17 @@ sys_page_map(envid_t srcenvid, void *srcva,
 		return -E_INVAL;
     }
 
+    if((ret = envid2env(dstenvid, &dstenv, 1)) < 0) {
+        return ret;
+	}
+
     if((ret = page_insert(dstenv->env_pgdir, pp, dstva, perm)) < 0) {
 	    return -E_NO_MEM;
-	}	
+	}
+
+    /*cprintf("map [%08x] %08x(%08x) -> [%08x] %08x(%08x) perm: %x\n",
+			srcenv->env_id, srcva, *srcpte,
+			dstenv->env_id, dstva, *dstpte, perm);*/	
 	
 	return 0;
 	
@@ -314,7 +320,21 @@ static int
 sys_page_unmap(envid_t envid, void *va)
 {
 	// Hint: This function is a wrapper around page_remove().
+	struct Env *env = 0;
+	int ret = 0;
 
+	if(((unsigned int)va >= UTOP) || (va % PGSIZE)) {
+	    return -E_INVAL;
+	}
+	
+	if((ret = envid2env(envid, &env, 1)) < 0) {
+        return ret;
+	}
+
+	page_remove(env->env_pgdir, va);
+
+	return 0;
+	
 	// LAB 4: Your code here.
 	panic("sys_page_unmap not implemented");
 }
