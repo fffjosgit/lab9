@@ -275,16 +275,56 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	int ret = 0;
 	switch(syscallno) {
 	case SYS_cputs:
+	    //static void sys_cputs(const char *s, size_t len);
 	    sys_cputs((const char *)a1, (size_t)a2);
 	    break;
 	case SYS_cgetc:
+	    //static int sys_cgetc(void);
 	    ret = sys_cgetc();
 	    break;
 	case SYS_getenvid:
+	    //static envid_t sys_getenvid(void);
 	    ret = sys_getenvid();
 	    break;
 	case SYS_env_destroy:
+	    //static int sys_env_destroy(envid_t envid);
 	    ret = sys_env_destroy((envid_t)a1);
+	    break;
+	case SYS_page_alloc:
+	    //static int sys_page_alloc(envid_t envid, void *va, int perm);	    
+	    ret = sys_page_alloc((envid_t)a1, (void *)a2, (int)a3);
+	    break;
+	case SYS_page_map:
+	    //static int sys_page_map(envid_t srcenvid, void *srcva, envid_t dstenvid, void *dstva, int perm);
+	    ret = sys_page_map((envid_t)a1, (void *)a2, (envid_t)a3, (void *)a4, (int)a5);
+	    break;
+	case SYS_page_unmap:
+	    //static int sys_page_unmap(envid_t envid, void *va);
+	    ret = sys_page_unmap((envid_t)a1, (void *)a2);
+	    break;
+	case SYS_exofork:
+	    //static envid_t sys_exofork(void);
+	    ret = sys_exofork();
+	    break;
+	case SYS_env_set_status:
+	    //static int sys_env_set_status(envid_t envid, int status);
+        ret = sys_env_set_status((envid_t)a1, (int)a2);
+	    break;
+	case SYS_env_set_pgfault_upcall:
+	    //static int sys_env_set_pgfault_upcall(envid_t envid, void *func);
+	    ret = sys_env_set_pgfault_upcall((envid_t)a1, (void *)a2);
+	    break;
+	case SYS_yield: 
+	    //static void sys_yield(void);
+	    sys_yield();
+	    break;
+	case SYS_ipc_try_send:
+	    //static int sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm);
+	    ret = sys_ipc_try_send((envid_t)a1, (uint32_t)a2, (void *)a3, (unsigned)a4);
+	    break;
+	case SYS_ipc_recv:
+	    //static int sys_ipc_recv(void *dstva);
+	    ret = sys_ipc_recv((void *)a1);
 	    break;
 	default:
 	    panic("syscall: unknown syscalno");
