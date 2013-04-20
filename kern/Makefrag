@@ -31,11 +31,7 @@ KERN_SRCFILES :=	kern/entry.S \
 			lib/printfmt.c \
 			lib/readline.c \
 			lib/string.c
-			#kern/lapic.c \
-			#kern/mpconfig.c \
-			#kern/mpentry.S \
-
-
+			
 # Source files for LAB4
 KERN_SRCFILES +=	kern/mpconfig.c \
 			kern/spinlock.c
