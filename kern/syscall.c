@@ -122,7 +122,7 @@ sys_env_set_status(envid_t envid, int status)
 	struct Env *env = 0;
 	int ret;
 	
-	if((ret = envid2env(envid_t envid, &env, 1)) < 0) {
+	if((ret = envid2env(envid, &env, 1)) < 0) {
 	    return -E_BAD_ENV;
 	}
 	switch(status) {
@@ -161,8 +161,8 @@ sys_env_set_pgfault_upcall(envid_t envid, void *func)
         return ret;
 	}
 
-	user_mem_assert(e, func, 4, 0);
-	task->env_pgfault_upcall = func;
+	user_mem_assert(env, func, 4, 0);
+	env->env_pgfault_upcall = func;
 			
 	return 0;
 
@@ -202,7 +202,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 		return -E_INVAL;
 	}
 
-	if(perm & ~PTE_SYSCALL & 0xFFF)) {
+	if(perm & ~PTE_SYSCALL & 0xFFF) {
 		return -E_INVAL;
 	}
 	
@@ -275,7 +275,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
 		return -E_INVAL;
 	}
 
-	if(perm & ~PTE_SYSCALL & 0xFFF)) {
+	if(perm & ~PTE_SYSCALL & 0xFFF) {
 		return -E_INVAL;
 	}
 
@@ -393,7 +393,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 		return -E_IPC_NOT_RECV;
 	}
 
-    env->env_ipc_perm = 0;
+    target->env_ipc_perm = 0;
     
     if(srcva) {
         if(((unsigned int)srcva >= UTOP) || (srcva % PGSIZE)) {
@@ -414,7 +414,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 		if((ret = page_insert(target->env_pgdir, pp, target->env_ipc_dstva, perm)) < 0) {
 			return -E_NO_MEM;
 		}
-		env->env_ipc_perm = perm;
+		target->env_ipc_perm = perm;
     }
     
 	target->env_ipc_recving = 0;
