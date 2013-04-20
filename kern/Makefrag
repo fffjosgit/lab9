@@ -32,20 +32,79 @@ KERN_SRCFILES :=	kern/entry.S \
 			lib/readline.c \
 			lib/string.c
 
-KERN_SRCFILES +=       kern/mpconfig.c \
-		       kern/spinlock.c \
-		       kern/alloc.c
+# Source files for LAB4
+KERN_SRCFILES +=	kern/mpentry.S \
+			kern/mpconfig.c \
+			kern/lapic.c \
+			kern/spinlock.c
 
+# Source files for LAB6
+KERN_SRCFILES +=	kern/e100.c \
+			kern/e1000.c \
+			kern/pci.c \
+			kern/time.c
 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
 
 # Binary program images to embed within the kernel.
-KERN_BINFILES :=	prog/test1 \
-			prog/test2 \
-			prog/test3 \
-			prog/test4 \
-			prog/test5
+# Binary files for LAB3
+KERN_BINFILES :=	user/hello \
+			user/buggyhello \
+			user/buggyhello2 \
+			user/evilhello \
+			user/testbss \
+			user/divzero \
+			user/breakpoint \
+			user/softint \
+			user/badsegment \
+			user/faultread \
+			user/faultreadkernel \
+			user/faultwrite \
+			user/faultwritekernel
+
+# Binary files for LAB4
+KERN_BINFILES +=	user/idle \
+			user/yield \
+			user/dumbfork \
+			user/stresssched \
+			user/faultdie \
+			user/faultregs \
+			user/faultalloc \
+			user/faultallocbad \
+			user/faultnostack \
+			user/faultbadhandler \
+			user/faultevilhandler \
+			user/forktree \
+			user/spin \
+			user/fairness \
+			user/pingpong \
+			user/pingpongs \
+			user/primes
+# Binary files for LAB5
+KERN_BINFILES +=	user/testfile \
+			user/writemotd \
+			user/icode \
+			fs/fs
+
+# Binary files for LAB6
+KERN_BINFILES +=	user/testtime \
+			user/httpd \
+			user/echosrv \
+			user/echotest \
+			net/testoutput \
+			net/testinput \
+			net/ns
+
+# Binary files for LAB7
+KERN_BINFILES +=	user/testpteshare \
+			user/testfdsharing \
+			user/testpipe \
+			user/testpiperace \
+			user/testpiperace2 \
+			user/primespipe \
+			user/testkbd \
+			user/testshell
 
 KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(KERN_OBJFILES))
@@ -74,15 +133,12 @@ $(OBJDIR)/kern/init.o: override KERN_CFLAGS+=$(INIT_CFLAGS)
 $(OBJDIR)/kern/init.o: $(OBJDIR)/.vars.INIT_CFLAGS
 
 # How to build the kernel itself
-# LAB 2: you should change this in order to insert kernel.sym in kernel 
 $(OBJDIR)/kern/kernel: $(KERN_OBJFILES) $(KERN_BINFILES) kern/kernel.ld \
 	  $(OBJDIR)/.vars.KERN_LDFLAGS
 	@echo + ld $@
-	$(V)$(LD) -r -o $@.pre $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b binary $(KERN_BINFILES)
-	$(V)$(NM) -n $@.pre > $@.pre.sym
-	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $@.pre -b binary $@.pre.sym
-	$(V)$(NM) -n $@ > $@.sym
+	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b binary $(KERN_BINFILES)
 	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
 
 # How to build the kernel disk image
 $(OBJDIR)/kern/kernel.img: $(OBJDIR)/kern/kernel $(OBJDIR)/boot/boot
