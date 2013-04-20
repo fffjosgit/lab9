@@ -43,8 +43,14 @@ i386_init(void)
 	env_init();
 	trap_init();
 
+	mp_init();
+	lapic_init();
+
 	pic_init();
 	rtc_init();
+	time_init();
+
+	boot_aps();
 
 #if defined(TEST)
 	// Don't touch -- used by grading script!
