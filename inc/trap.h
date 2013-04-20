@@ -32,12 +32,24 @@
 #define IRQ_OFFSET	32	// IRQ 0 corresponds to int IRQ_OFFSET
 
 // Hardware IRQ numbers. We receive these as (IRQ_OFFSET+IRQ_WHATEVER)
-#define IRQ_TIMER        0
-#define IRQ_KBD          1
-#define IRQ_SERIAL       4
-#define IRQ_SPURIOUS     7
-#define IRQ_IDE         14
+#define IRQ_TIMER        0      //system timer
+#define IRQ_KBD          1      //keyboard
+#define IRQ_IRQ2         2      //2nd IRQ controller
+#define IRQ_SERIAL2      3      //COM2
+#define IRQ_SERIAL       4      //COM1
+#define IRQ_FREE1        5      //free: LPT2 or sound card
+#define IRQ_FLOPPY       6      //floppy disk
+#define IRQ_LPT1         7      //LPT1
+#define IRQ_RTC          8      //real time clock
+#define IRQ_FREE2        9      //free: may be labeled/appear as IRQ 2
+#define IRQ_FREE3       10      //free: often used by sound cards
+#define IRQ_FREE4       11
+#define IRQ_MOUSE       12      //PS/2 mouse
+#define IRQ_MCOP        13      //math coprocessor on CPU (used)
+#define IRQ_IDE         14      //primary IDE
+#define IRQ_IDE2        15      //secondary IDE
 #define IRQ_ERROR       19
+#define IRQ_SPURIOUS    31
 
 #ifndef __ASSEMBLER__
 

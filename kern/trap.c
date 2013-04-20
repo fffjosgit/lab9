@@ -66,6 +66,15 @@ static const char *trapname(int trapno)
 	return "(unknown trap)";
 }
 
+// Set up a normal interrupt/trap gate descriptor.
+// - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
+// - sel: Code segment selector for interrupt/trap handler
+// - off: Offset in code segment for interrupt/trap handler
+// - dpl: Descriptor Privilege Level -
+//	  the privilege level required for software to invoke
+//	  this interrupt/trap gate explicitly using an int instruction.
+//#define SETGATE(gate, istrap, sel, off, dpl)
+
 
 void
 trap_init(void)
@@ -73,6 +82,78 @@ trap_init(void)
 	extern struct Segdesc gdt[];
 
 	// LAB 3: Your code here.
+
+	extern void diverr_entry();   // T_DIVIDE
+    extern void debug_entry();    // T_DEBUG
+    extern void nmi_entry();      //T_NMI
+    extern void brkpt_entry();    //T_BRKPT
+    extern void overflow_entry(); //T_OFLOW
+    extern void bound_entry();    //T_BOUND
+    extern void illop_entry();    //T_ILLOP
+    extern void device_entry();   //T_DEVICE
+    extern void dblflt_entry();   //T_DBLFLT
+    extern void tss_entry();      //T_TSS
+    extern void segnp_entry();    //T_SEGNP
+    extern void stack_entry();    //T_STACK
+    extern void gpflt_entry();    //T_GPFLT
+    extern void pgflt_entry();    //T_PGFLT
+    extern void fperr_entry();    //T_FPERR
+    extern void align_entry();    //T_ALIGN
+    extern void mchk_entry();     //T_MCHK
+    extern void simderr_entry();  //T_SIMDERR
+    extern void syscall_entry();  //T_SYSCALL
+
+    SETGATE(idt[T_DIVIDE],  1, GD_KT, diverr_entry, 0);
+	SETGATE(idt[T_DEBUG],   1, GD_KT, debug_entry, 0);
+	SETGATE(idt[T_NMI],     0, GD_KT, nmi_entry, 0);
+	SETGATE(idt[T_BRKPT],   1, GD_KT, brkpt_entry, 3);
+	SETGATE(idt[T_OFLOW],   1, GD_KT, overflow_entry, 0);
+	SETGATE(idt[T_BOUND],   1, GD_KT, bound_entry, 0);
+	SETGATE(idt[T_ILLOP],   1, GD_KT, illop_entry, 0);
+	SETGATE(idt[T_DEVICE],  1, GD_KT, device_entry, 0);
+	SETGATE(idt[T_DBLFLT],  1, GD_KT, dblflt_entry, 0);
+	SETGATE(idt[T_TSS],     1, GD_KT, tss_entry, 0);
+	SETGATE(idt[T_SEGNP],   1, GD_KT, segnp_entry, 0);
+	SETGATE(idt[T_STACK],   1, GD_KT, stack_entry, 0);
+	SETGATE(idt[T_GPFLT],   1, GD_KT, gpflt_entry, 0);
+	SETGATE(idt[T_PGFLT],   1, GD_KT, pgflt_entry, 0);
+	SETGATE(idt[T_FPERR],   1, GD_KT, fperr_entry, 0);
+	SETGATE(idt[T_ALIGN],   1, GD_KT, align_entry, 0);
+	SETGATE(idt[T_MCHK],    1, GD_KT, mchk_entry, 0);
+	SETGATE(idt[T_SIMDERR], 1, GD_KT, simderr_entry, 0);
+	SETGATE(idt[T_SYSCALL], 0, GD_KT, syscall_entry, 3);
+
+    extern void irq0_entry();
+    extern void irq1_entry();
+    extern void irq2_entry();
+    extern void irq3_entry();
+    extern void irq4_entry();
+    extern void irq5_entry();
+    extern void irq6_entry();
+    extern void irq7_entry();
+    extern void irq8_entry();
+    extern void irq9_entry();
+    extern void irq10_entry();
+    extern void irq11_entry();
+    extern void irq12_entry();
+    extern void irq13_entry();
+    extern void irq14_entry();
+
+    SETGATE(idt[IRQ_OFFSET + 0], 0, GD_KT, irq0_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 1], 0, GD_KT, irq1_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 2], 0, GD_KT, irq2_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 3], 0, GD_KT, irq3_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 4], 0, GD_KT, irq4_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 5], 0, GD_KT, irq5_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 6], 0, GD_KT, irq6_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 7], 0, GD_KT, irq7_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 8], 0, GD_KT, irq8_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 9], 0, GD_KT, irq9_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 10], 0, GD_KT, irq10_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 11], 0, GD_KT, irq11_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 12], 0, GD_KT, irq12_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 13], 0, GD_KT, irq13_entry, 0);
+	SETGATE(idt[IRQ_OFFSET + 14], 0, GD_KT, irq14_entry, 0);
 
 	// Per-CPU setup 
 	trap_init_percpu();
@@ -111,8 +192,7 @@ trap_init_percpu(void)
 	ts.ts_ss0 = GD_KD;
 
 	// Initialize the TSS slot of the gdt.
-	gdt[GD_TSS0 >> 3] = SEG16(STS_T32A, (uint32_t) (&ts),
-					sizeof(struct Taskstate), 0);
+	gdt[GD_TSS0 >> 3] = SEG16(STS_T32A, (uint32_t) (&ts),  sizeof(struct Taskstate), 0);
 	gdt[GD_TSS0 >> 3].sd_s = 0;
 
 	// Load the TSS selector (like other segment selectors, the
@@ -178,9 +258,59 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
-	if (tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER + 1024) {
-		ssched_yield();
-		return;
+	int ret;
+	
+	switch(tf->tf_trapno) {
+	case T_DIVIDE:     		// divide error
+	    break;
+    case T_DEBUG:      		// debug exception
+        monitor(tf);
+        return;
+    case T_NMI:        		// non-maskable interrupt
+        break;
+    case T_BRKPT:      		// breakpoint
+        panic("breakpoint here");
+        break;
+    case T_OFLOW:      		// overflow
+        break;
+    case T_BOUND:      		// bounds check
+        break;
+    case T_ILLOP:      		// illegal opcode
+        break;
+    case T_DEVICE:     		// device not available
+        break;
+    case T_DBLFLT:     		// double fault
+        break;
+    /* #define T_COPROC  9 */	// reserved (not generated by recent processors)
+    case T_TSS:       		// invalid task switch segment
+        break;
+    case T_SEGNP:     		// segment not present
+        break;
+    case T_STACK:     		// stack exception
+        break;
+    case T_GPFLT:     		// general protection fault
+        break;
+    case T_PGFLT:     		// page fault
+        page_fault_handler(tf);
+        break;
+    /* #define T_RES    15 */	// reserved
+    case T_FPERR:     		// floating point error
+        break;
+    case T_ALIGN:     		// aligment check
+        break;
+    case T_MCHK:      		// machine check
+        break;
+    case T_SIMDERR:         // SIMD floating point error
+        break;
+	case IRQ_OFFSET + IRQ_TIMER:
+	    //sched_yield();
+	    break;
+	case T_SYSCALL:         //system call
+	    ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx,
+				      tf->tf_regs.reg_ecx, tf->tf_regs.reg_ebx,
+				      tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
+		tf->tf_regs.reg_eax = ret;
+	    return;
 	}
 
 	// Handle spurious interrupts
@@ -227,7 +357,7 @@ trap(struct Trapframe *tf)
 	// the interrupt path.
 	assert(!(read_eflags() & FL_IF));
 
-	cprintf("Incoming TRAP frame at %p\n", tf);
+	//cprintf("Incoming TRAP frame at %p\n", tf);
 
 	if ((tf->tf_cs & 3) == 3) {
 		// Trapped from user mode.
@@ -279,6 +409,11 @@ page_fault_handler(struct Trapframe *tf)
 	// Handle kernel-mode page faults.
 
 	// LAB 3: Your code here.
+	if ((tf->tf_cs & 3) == 0) {
+		cprintf("kernel fault va %08x ip %08x\n", fault_va, tf->tf_eip);
+		panic("page fault in kernel mode");
+		return;
+	}
 
 	// We've already handled kernel-mode exceptions, so if we get here,
 	// the page fault happened in user mode.

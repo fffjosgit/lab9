@@ -27,6 +27,10 @@
 // use PGADDR(PDX(la), PTX(la), PGOFF(la)).
 
 // page number field of address
+#define PPN(la)		(((uintptr_t) (la)) >> PTXSHIFT)
+#define VPN(la)		PPN(la)		// used to index into vpt[]
+
+// page number field of address
 #define PGNUM(la)	(((uintptr_t) (la)) >> PTXSHIFT)
 
 // page directory index

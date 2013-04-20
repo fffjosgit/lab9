@@ -48,7 +48,7 @@ printnum(void (*putch)(int, void*), void *putdat,
 	}
 
 	// then print this (the least significant) digit
-	putch("0123456789abcdef"[num % base], putdat);
+	putch("0123456789ABSDEF"[num % base], putdat);
 }
 
 // Get an unsigned int of various possible sizes from a varargs list,

@@ -41,27 +41,26 @@ i386_init(void)
 
 	// Lab 3 user environment initialization functions
 	env_init();
-	if (0) {
 	trap_init();
 
 	pic_init();
 	rtc_init();
-	}
+
 #if defined(TEST)
 	// Don't touch -- used by grading script!
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	// Touch all you want.
-	ENV_CREATE(prog_sc_test1, ENV_TYPE_KERNEL, 1);
-	ENV_CREATE(prog_sc_test2, ENV_TYPE_KERNEL, 2);
-	ENV_CREATE(prog_sc_test3, ENV_TYPE_KERNEL, 3);
+	//ENV_CREATE(prog_sc_test1, ENV_TYPE_KERNEL, 1);
+	//ENV_CREATE(prog_sc_test2, ENV_TYPE_KERNEL, 2);
+	//ENV_CREATE(prog_sc_test3, ENV_TYPE_KERNEL, 3);
 	//ENV_CREATE(prog_sc_test4, ENV_TYPE_KERNEL, 4);
 	//ENV_CREATE(prog_sc_test5, ENV_TYPE_KERNEL, 5);
-	ENV_CREATE(prog_sc_test6, ENV_TYPE_KERNEL, 6);
-	ENV_CREATE(prog_sc_test7, ENV_TYPE_KERNEL, 7);
-	ENV_CREATE(prog_sc_test8, ENV_TYPE_KERNEL, 8);
-	ENV_CREATE(prog_sc_test9, ENV_TYPE_KERNEL, 9);
-	ENV_CREATE(prog_sc_test10, ENV_TYPE_KERNEL, 10);
+	//ENV_CREATE(prog_sc_test6, ENV_TYPE_KERNEL, 6);
+	//ENV_CREATE(prog_sc_test7, ENV_TYPE_KERNEL, 7);
+	//ENV_CREATE(prog_sc_test8, ENV_TYPE_KERNEL, 8);
+	//ENV_CREATE(prog_sc_test9, ENV_TYPE_KERNEL, 9);
+	//ENV_CREATE(prog_sc_test10, ENV_TYPE_KERNEL, 10);
 
 	NEW_ENV_CREATE(user_primes, ENV_TYPE_USER);
 #endif // TEST*
