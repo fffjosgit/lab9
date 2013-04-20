@@ -198,11 +198,11 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	struct PageInfo *pp = 0;
 	int ret = 0;
 	
-	if (!(perm & PTE_U) || !(perm & PTE_P)) {
+	if(!(perm & PTE_U) || !(perm & PTE_P)) {
 		return -E_INVAL;
 	}
 
-	if (perm & ~PTE_SYSCALL & 0xFFF)) {
+	if(perm & ~PTE_SYSCALL & 0xFFF)) {
 		return -E_INVAL;
 	}
 	
@@ -271,11 +271,11 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	    return -E_INVAL;
 	}
 
-	if (!(perm & PTE_U) || !(perm & PTE_P)) {
+	if(!(perm & PTE_U) || !(perm & PTE_P)) {
 		return -E_INVAL;
 	}
 
-	if (perm & ~PTE_SYSCALL & 0xFFF)) {
+	if(perm & ~PTE_SYSCALL & 0xFFF)) {
 		return -E_INVAL;
 	}
 
@@ -287,7 +287,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
         return -E_NO_MEM;
     }
 
-    if ((perm & PTE_W) && !(*srcpte & PTE_W)) {
+    if((perm & PTE_W) && !(*srcpte & PTE_W)) {
 		return -E_INVAL;
     }
 
@@ -380,6 +380,50 @@ sys_page_unmap(envid_t envid, void *va)
 static int
 sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 {
+    struct Env *target = 0;
+    struct PageInfo *pp = 0;
+    pte_t *pte = 0;
+    int ret = 0;
+
+    if((ret = envid2env(envid, &target, 0)) < 0) {
+        return ret;
+	}
+	
+	if(!target->env_ipc_recving) {
+		return -E_IPC_NOT_RECV;
+	}
+
+    env->env_ipc_perm = 0;
+    
+    if(srcva) {
+        if(((unsigned int)srcva >= UTOP) || (srcva % PGSIZE)) {
+			return -E_INVAL;
+		}
+		if(!(pp = page_lookup(curenv->env_pgdir, srcva, &pte))) {
+			return -E_INVAL;
+		}
+		if(!(perm & PTE_U) || !(perm & PTE_P)) {
+			return -E_INVAL;
+	    }
+	    if(perm & ~PTE_SYSCALL & 0xFFF) {
+		    return -E_INVAL;
+     	}
+     	if((perm & PTE_W) && !(*pte & PTE_W)) {
+			return -E_INVAL;
+		}
+		if((ret = page_insert(target->env_pgdir, pp, target->env_ipc_dstva, perm)) < 0) {
+			return -E_NO_MEM;
+		}
+		env->env_ipc_perm = perm;
+    }
+    
+	target->env_ipc_recving = 0;
+	target->env_ipc_from = curenv->env_id;
+	target->env_ipc_value = value;
+	target->env_status = ENV_RUNNABLE;
+
+    return 0;	
+
 	// LAB 4: Your code here.
 	panic("sys_ipc_try_send not implemented");
 }
@@ -398,9 +442,20 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 static int
 sys_ipc_recv(void *dstva)
 {
-	// LAB 4: Your code here.
-	panic("sys_ipc_recv not implemented");
+	if(((unsigned int)dstva >= UTOP) || (dstva % PGSIZE)) {
+	    return -E_INVAL;
+	}
+
+	curenv->env_ipc_dstva = dstva;
+	curenv->env_ipc_recving = 1;
+	curenv->env_status = ENV_NOT_RUNNABLE;
+	curenv->env_tf.tf_regs.reg_eax = 0; // return 0
+	
+	sched_yield();
 	return 0;
+	
+	// LAB 4: Your code here.
+	panic("sys_ipc_recv not implemented");	
 }
 
 // Dispatches to the correct kernel function, passing the arguments.
