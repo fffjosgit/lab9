@@ -17,10 +17,9 @@
 #include <kern/time.h>
 
 
-static void rtc_init(void)
-{
-}
-
+//static void rtc_init(void)
+//{
+//}
 
 void
 i386_init(void)
