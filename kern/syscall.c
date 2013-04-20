@@ -155,7 +155,17 @@ static int
 sys_env_set_pgfault_upcall(envid_t envid, void *func)
 {
 	// LAB 4: Your code here.
-	panic("sys_env_set_pgfault_upcall not implemented");
+	struct Env *env = 0;
+	int ret = 0;
+	if((ret = envid2env(envid, &env, 1)) < 0) {
+        return ret;
+	}
+
+	task->env_pgfault_upcall = func;
+	
+	return 0;
+
+	//panic("sys_env_set_pgfault_upcall not implemented");
 }
 
 // Allocate a page of memory and map it at 'va' with permission
@@ -183,9 +193,39 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	//   parameters for correctness.
 	//   If page_insert() fails, remember to free the page you
 	//   allocated!
+	struct Env *env = 0;
+	struct PageInfo *pp = 0;
+	int ret = 0;
+	
+	if (!(perm & PTE_U) || !(perm & PTE_P)) {
+		return -E_INVAL;
+	}
 
+	if (perm & ~PTE_SYSCALL & 0xFFF)) {
+		return -E_INVAL;
+	}
+	
+	if(((unsigned int)va >= UTOP) || (va != ROUNDUP(va, PGSIZE))) {
+	    return -E_INVAL;
+	}
+
+	if((ret = envid2env(envid, &env, 1)) < 0) {
+        return ret;
+	}
+	
+	if(!(pp = page_alloc(ALLOC_ZERO))) {
+		return -E_NO_MEM;
+	}
+
+	if((ret = page_insert(env->env_pgdir, pp, va, perm)) < 0) {
+	    page_free(pp);
+		return -E_NO_MEM;
+	}
+
+	return 0;
+	
 	// LAB 4: Your code here.
-	panic("sys_page_alloc not implemented");
+	//panic("sys_page_alloc not implemented");
 }
 
 // Map the page of memory at 'srcva' in srcenvid's address space
@@ -214,7 +254,51 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	//   parameters for correctness.
 	//   Use the third argument to page_lookup() to
 	//   check the current permissions on the page.
+	struct PageInfo *pp = 0;
+	struct Env *srcenv = 0;
+	struct Env *dstenv = 0;
 
+	pte_t *srcpte = 0;
+	int ret = 0;
+
+	if(((unsigned int)srcva >= UTOP) || (srcva != ROUNDUP(srcva, PGSIZE))) {
+	    return -E_INVAL;
+	}
+
+	if(((unsigned int)dstva >= UTOP) || (dstva != ROUNDUP(dstva, PGSIZE))) {
+	    return -E_INVAL;
+	}
+
+	if (!(perm & PTE_U) || !(perm & PTE_P)) {
+		return -E_INVAL;
+	}
+
+	if (perm & ~PTE_SYSCALL & 0xFFF)) {
+		return -E_INVAL;
+	}
+
+    if((ret = envid2env(srcenvid, &srcenv, 1)) < 0) {
+        return ret;
+	}
+
+    if((ret = envid2env(dstenvid, &dstenv, 1)) < 0) {
+        return ret;
+	}
+
+    if(!(pp = page_lookup(srcenv->env_pgdir, srcva, &srcpte))) {
+        return -E_NO_MEM;
+    }
+
+    if ((perm & PTE_W) && !(*srcpte & PTE_W)) {
+		return -E_INVAL;
+    }
+
+    if((ret = page_insert(dstenv->env_pgdir, pp, dstva, perm)) < 0) {
+	    return -E_NO_MEM;
+	}	
+	
+	return 0;
+	
 	// LAB 4: Your code here.
 	panic("sys_page_map not implemented");
 }
