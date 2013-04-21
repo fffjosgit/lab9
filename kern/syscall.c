@@ -206,7 +206,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 		return -E_INVAL;
 	}
 	
-	if(((unsigned int)va >= UTOP) || (va % PGSIZE)) {
+	if(((unsigned int)va >= UTOP) || ((unsigned int)va % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
@@ -263,11 +263,11 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	pte_t *srcpte = 0;
 	int ret = 0;
 
-	if(((unsigned int)srcva >= UTOP) || (srcva % PGSIZE)) {
+	if(((unsigned int)srcva >= UTOP) || ((unsigned int)srcva % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
-	if(((unsigned int)dstva >= UTOP) || (dstva % PGSIZE)) {
+	if(((unsigned int)dstva >= UTOP) || ((unsigned int)dstva % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
@@ -323,7 +323,7 @@ sys_page_unmap(envid_t envid, void *va)
 	struct Env *env = 0;
 	int ret = 0;
 
-	if(((unsigned int)va >= UTOP) || (va % PGSIZE)) {
+	if(((unsigned int)va >= UTOP) || ((unsigned int)va % PGSIZE)) {
 	    return -E_INVAL;
 	}
 	
@@ -396,7 +396,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
     target->env_ipc_perm = 0;
     
     if(srcva) {
-        if(((unsigned int)srcva >= UTOP) || (srcva % PGSIZE)) {
+        if(((unsigned int)srcva >= UTOP) || ((unsigned int)srcva % PGSIZE)) {
 			return -E_INVAL;
 		}
 		if(!(pp = page_lookup(curenv->env_pgdir, srcva, &pte))) {
@@ -442,7 +442,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 static int
 sys_ipc_recv(void *dstva)
 {
-	if(((unsigned int)dstva >= UTOP) || (dstva % PGSIZE)) {
+	if(((unsigned int)dstva >= UTOP) || ((unsigned int)dstva % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
