@@ -14,9 +14,9 @@
 static void
 pgfault(struct UTrapframe *utf)
 {
-	void *addr = (void *) utf->utf_fault_va;
+	void *addr = (void *)utf->utf_fault_va;
 	uint32_t err = utf->utf_err;
-	int r;
+	int ret;
 
 	// Check that the faulting access was (1) a write, and (2) to a
 	// copy-on-write page.  If not, panic.
