@@ -70,12 +70,41 @@ pgfault(struct UTrapframe *utf)
 // Returns: 0 on success, < 0 on error.
 // It is also OK to panic on error.
 //
+
+//i have some questions!!!!!!!!!!!!!
 static int
 duppage(envid_t envid, unsigned pn)
 {
 	int ret;
+	pte_t pte = vpn[pn];
+	unsigned int perm = 0;
+	void *va = (void *)(pn << PGSHIFT);
 
-	pn * PGSIZE
+	if (!(pte & PTE_P)) {
+		return -E_INVAL;
+	}
+
+	/*if ((pte & PTE_W) && (pte & PTE_COW)) {
+        panic("PTE_W & PTE_COW\n");
+    }*/
+
+	if (!(pte & PTE_SHARE) && ((pte & PTE_W) || (pte & PTE_COW))) {
+	    if ((ret = sys_page_map(curenv->env_id, va, envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
+		    //panic("sys_page_map error: %e", r);
+			panic("sys_page_map error");
+	    }
+	    //if ((ret = sys_page_map(curenv->envid, va, curenv->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
+	    if ((ret = sys_page_map(envid, va, curenv->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
+		    //panic("sys_page_map error: %e", r);
+			panic("sys_page_map error");
+	    }
+	} else {
+	    if ((ret = sys_page_map(curenv->env_id, va, envid, va, pte & PTE_SYSCALL)) < 0) {
+			//panic("sys_page_map error: %e", r);
+			panic("sys_page_map error");
+		}
+	}
+	
 
 	return 0;
 
@@ -102,6 +131,23 @@ duppage(envid_t envid, unsigned pn)
 envid_t
 fork(void)
 {
+	envid_t envid;
+	int ret;
+
+	set_pgfault_handler(pgfault);
+
+	if((envid = sys_exofork()) < 0) {
+	    //panic("sys_exofork: error %e\n", envid);
+	    panic("fork: sys_exofork error");
+	}
+
+	if(envid == 0) {
+	    thisenv = &envs[ENVX(sys_getenvid())];
+	    return 0;
+	}
+
+	return envid;
+	
 	// LAB 4: Your code here.
 	panic("fork not implemented");
 }
