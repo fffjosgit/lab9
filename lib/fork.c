@@ -26,6 +26,10 @@ pgfault(struct UTrapframe *utf)
 
 	// LAB 4: Your code here.
 
+	if (!((err & FEC_WR) && (vpt[VPN((unsigned int)addr)] & PTE_COW))) {
+		panic("not a write and not to a COW page, addr: %x, err: %x", addr, err);
+	}
+
 	// Allocate a new page, map it at a temporary location (PFTEMP),
 	// copy the data from the old page to the new page, then move the new
 	// page to the old page's address.
@@ -35,7 +39,24 @@ pgfault(struct UTrapframe *utf)
 
 	// LAB 4: Your code here.
 
-	panic("pgfault not implemented");
+	envid_t envid = sys_getenvid();
+	void *va = ROUNDDOWN(addr, PGSIZE);
+	
+	if ((ret = sys_page_alloc(envid, (void *)PFTEMP, PTE_U | PTE_W | PTE_P)) < 0) {
+		//panic("sys_page_alloc error: %e", r);
+		panic("sys_page_alloc error");
+	}
+	memmove((void *)PFTEMP, va, PGSIZE);
+	if ((ret = sys_page_map(envid, (void *)PFTEMP, envid, va, PTE_U | PTE_W | PTE_P)) < 0)  {
+		//panic("sys_page_map error: %e", r);
+		panic("sys_page_map error");
+	}
+	if ((ret = sys_page_unmap(envid, (void *)PFTEMP)) < 0) {
+		//panic("sys_page_unmap error: %e", r);
+		panic("sys_page_unmap error");
+	}
+
+	//panic("pgfault not implemented");
 }
 
 //
@@ -52,11 +73,14 @@ pgfault(struct UTrapframe *utf)
 static int
 duppage(envid_t envid, unsigned pn)
 {
-	int r;
+	int ret;
+
+	pn * PGSIZE
+
+	return 0;
 
 	// LAB 4: Your code here.
-	panic("duppage not implemented");
-	return 0;
+	//panic("duppage not implemented");
 }
 
 //
