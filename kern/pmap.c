@@ -137,7 +137,7 @@ mem_init(void)
 	i386_detect_memory();
 
 	// Remove this line when you're ready to test this function.
-//	panic("mem_init: This function is not finished\n");
+    //panic("mem_init: this function is not finished.\n");
 
 	//////////////////////////////////////////////////////////////////////
 	// create initial page directory.
@@ -177,9 +177,9 @@ mem_init(void)
 	// or page_insert
 	page_init();
 
-	check_page_free_list(1);
-	check_page_alloc();
-	check_page();
+	//check_page_free_list(1);
+	//check_page_alloc();
+	//check_page();
 
 	//////////////////////////////////////////////////////////////////////
 	// Now we set up virtual memory
@@ -205,7 +205,6 @@ mem_init(void)
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
 	boot_map_region(kern_pgdir, KSTACKTOP - KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W);
-	//boot_map_region(kern_pgdir, KSTACKTOP - PTSIZE, PTSIZE - KSTKSIZE, 0, 0);
 
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE.
@@ -218,10 +217,10 @@ mem_init(void)
 	boot_map_region(kern_pgdir, KERNBASE, 0xFFFFFFFF - KERNBASE + 1, 0, PTE_W);
 
 	// Initialize the SMP-related parts of the memory map
-	mem_init_mp();
+	//mem_init_mp();
 
 	// Check that the initial page directory has been set up correctly.
-	check_kern_pgdir();
+	//check_kern_pgdir();
 
 	//////////////////////////////////////////////////////////////////////
 	// Map the 'envs' array read-only by the user at linear address UENVS
@@ -247,16 +246,16 @@ mem_init(void)
 	kern_pgdir[0] = kern_pgdir[PDX(KERNBASE)];
 	lcr3(PADDR(kern_pgdir));
 
-	check_page_free_list(0);
+	//check_page_free_list(0);
 
 	// entry.S set the really important flags in cr0 (including enabling
 	// paging).  Here we configure the rest of the flags that we care about.
 	cr0 = rcr0();
 	cr0 |= CR0_PE | CR0_PG | CR0_AM | CR0_WP | CR0_NE | CR0_MP;
-	cr0 &= ~(CR0_TS|CR0_EM);
+	cr0 &= ~(CR0_TS | CR0_EM);
 	lcr0(cr0);
 
-    check_page_installed_pgdir();
+    //check_page_installed_pgdir();
 
     kern_pgdir[0] = 0;
     lcr3(PADDR(kern_pgdir));	
@@ -291,18 +290,23 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	pte_t *pte;
 
 	perm &= 0xFFF;
-	perm |= PTE_P;     
+	perm |= PTE_P;
+
+    if(!env) {
+        //panic("user_mem_check: env is a null pointer.\n");
+        return;
+    } 
 
     va_start = ROUNDDOWN((unsigned int)va, PGSIZE);
 	va_end = ROUNDUP((unsigned int)(va + len), PGSIZE);
 
 	for(i = va_start; i < va_end; i += PGSIZE) {
 	    user_mem_check_addr = (uintptr_t)i;
-	    pte = pgdir_walk(env->env_pgdir, (void*) i, 0);
+	    pte = pgdir_walk(env->env_pgdir, (void *)i, 0);
 	    if(!pte) {
 	        return -E_FAULT;
 	    }
-	    if(i > ULIM) {
+	    if(i >= ULIM) {
 	        return -E_FAULT;
 	    }
 	    if((*pte & perm) != perm) {
@@ -351,6 +355,16 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
+
+	//boot_map_region(kern_pgdir, IOMEMBASE, -IOMEMBASE, IOMEM_PADDR, PTE_W);
+
+	uintptr_t kstack_start = KSTACKTOP - KSTKSIZE;
+
+    int i;
+    for (i = 0; i != NCPU; i++) {
+        boot_map_region(kern_pgdir, kstack_start, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W);
+        kstack_start -= (KSTKSIZE + KSTKGAP);
+    }
 
 }
 
@@ -610,7 +624,11 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	if(!pgdir) {
-	    //panic("page_fre: pgdir is a null pointer.\n");
+	    //panic("page_insert: pgdir is a null pointer.\n");
+	    return;
+	}
+	if(!pp) {
+	    //panic("page_insert: pp is a null pointer.\n");
 	    return;
 	}
 	
@@ -627,7 +645,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
             pp->pp_ref++;
             tlb_invalidate(pgdir, va);
 	    } else {
-	        *pte = (*pte & 0xFFFFF000) | perm | PTE_P;
+	        *pte = (*pte & 0xFFFFF000) | perm | PTE_P; // = page2pa(pp) | perm | PTE_P
 	    }	    
 	} else {
 	    *pte = page2pa(pp) | perm | PTE_P;
@@ -650,12 +668,14 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
-	// Fill this function in
+	if(!pgdir) {
+	    //panic("page_lookup: pgdir is a null pointer.\n");
+	    return;
+	}
+	
 	pte_t *pte = pgdir_walk(pgdir, va, 0);
-    if(!pte) {
-        return NULL;
-    }
-    if(!(*pte & PTE_P)) {
+    
+    if(!pte || !(*pte & PTE_P)) {
         return NULL;
     }
     if(PPN(PTE_ADDR(*pte)) >= npages) {
@@ -686,7 +706,11 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 void
 page_remove(pde_t *pgdir, void *va)
 {
-	// Fill this function in
+	if(!pgdir) {
+	    //panic("page_remove: pgdir is a null pointer.\n");
+	    return;
+	}
+	
 	pte_t *pte;
 	struct PageInfo *pp = page_lookup(pgdir, va, &pte);
 
@@ -705,8 +729,9 @@ void
 tlb_invalidate(pde_t *pgdir, void *va)
 {
 	// Flush the entry only if we're modifying the current address space.
-	if (!curenv || curenv->env_pgdir == pgdir)
+	if (!curenv || (curenv->env_pgdir == pgdir)) {
 		invlpg(va);
+	}
 }
 
 static uintptr_t user_mem_check_addr;
@@ -743,7 +768,16 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+
+	pa = ROUNDUP(pa, PGSIZE);
+	if((unsigned int)pa >= MMIOLIM) {
+	    panic("mmio_map_region: pa should be below/equal MMIOLIM.\n");    
+	}
+	base += size;
+	boot_map_region(kern_pgdir, base, size, pa, PTE_W | PTE_PCD | PTE_PWT);
+
+	return (void *)base;
+	//panic("mmio_map_region not implemented");
 }
 
 
@@ -961,11 +995,13 @@ check_va2pa(pde_t *pgdir, uintptr_t va)
 	pte_t *p;
 
 	pgdir = &pgdir[PDX(va)];
-	if (!(*pgdir & PTE_P))
+	if(!(*pgdir & PTE_P)) {
 		return ~0;
+	}
 	p = (pte_t*) KADDR(PTE_ADDR(*pgdir));
-	if (!(p[PTX(va)] & PTE_P))
+	if(!(p[PTX(va)] & PTE_P)) {
 		return ~0;
+	}
 	return PTE_ADDR(p[PTX(va)]);
 }
 
