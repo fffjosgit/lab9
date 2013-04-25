@@ -133,6 +133,7 @@ fork(void)
 {
 	envid_t envid;
 	int ret;
+	int pn, i;
 
 	set_pgfault_handler(pgfault);
 
@@ -146,10 +147,35 @@ fork(void)
 	    return 0;
 	}
 
+	pn = UTOP / PGSIZE - 1;
+	//? what is this????
+	while (--pn >= 0) {
+		if (!(vpd[pn >> 10] & PTE_P)) { 
+			pn = (pn >> 10) << 10;
+	    } else if (vpt[pn] & PTE_P) {
+			duppage(envid, pn);
+		}
+    }
+
+	if ((ret = sys_page_alloc(envid, (void *)(UXSTACKTOP - PGSIZE), PTE_W |PTE_U |PTE_P)) < 0) {
+		//panic("sys_page_alloc error: %e", r);
+		panic("fork: sys_page_alloc error");
+    }
+
+    if ((ret = sys_env_set_pgfault_upcall(envid, thisenv->env_pgfault_upcall)) < 0) {
+        //panic("sys_env_set_pgfault_upcall: error %e\n", r);
+        panic("fork: sys_env_set_pgfault_upcall error");
+    }
+
+    if ((ret = sys_env_set_status(envid, ENV_RUNNABLE)) < 0) {
+		//panic("sys_env_set_status: %e", r);
+		panic("fork: sys_env_set_statuserror");
+	}
+
 	return envid;
 	
 	// LAB 4: Your code here.
-	panic("fork not implemented");
+	//panic("fork not implemented");
 }
 
 // Challenge!

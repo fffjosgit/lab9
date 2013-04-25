@@ -458,5 +458,36 @@ page_fault_handler(struct Trapframe *tf)
 	    print_trapframe(tf);
 	    env_destroy(curenv);
     }
+
+    //user exception stack
+    user_mem_assert(curenv, (void *)(UXSTACKTOP - 4), 4, PTE_P | PTE_W | PTE_U); 
+    user_mem_assert(curenv, (void *)(curenv->env_pgfault_upcall), 4, PTE_P | PTE_U);
+
+    utf.utf_fault_va = fault_va;
+	utf.utf_err = tf->tf_err;
+	utf.utf_regs = tf->tf_regs;
+	utf.utf_eip = tf->tf_eip;
+	utf.utf_eflags = tf->tf_eflags;
+	utf.utf_esp = tf->tf_esp;
+
+	if((tf->tf_esp >= UXSTACKTOP-PGSIZE) && (tf->tf_esp < UXSTACKTOP)) {
+	    tf->tf_esp -= 4;
+	} else {
+	    tf->tf_esp = UXSTACKTOP;
+	    //allocate another page for exception stack?
+	    if(tf->tf_esp < UXSTACKTOP - PGSIZE) {
+	        cprintf("user xception stack overflow\n");
+	        cprintf("[%08x] user fault va %08x ip %08x\n", curenv->env_id, fault_va, tf->tf_eip);
+	        print_trapframe(tf);
+	        env_destroy(curenv);
+	        return;
+	    } 
+	}
+    
+    //push utf on stack
+    *(struct UTrapFrame *) (tf->tf_esp) = utf;
+
+    tf->tf_eip = (unsigned int)curenv->env_pgfault_upcall;
+    envrun(curenv);
 }
 
