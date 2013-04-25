@@ -43,10 +43,11 @@ i386_detect_memory(void)
 
 	// Calculate the number of physical pages available in both base
 	// and extended memory.
-	if (npages_extmem)
+	if (npages_extmem) {
 		npages = (EXTPHYSMEM / PGSIZE) + npages_extmem;
-	else
+	} else {
 		npages = npages_basemem;
+	}
 
 	cprintf("Physical memory: %uK available, base = %uK, extended = %uK\n",
 		npages * PGSIZE / 1024,
@@ -104,10 +105,13 @@ boot_alloc(uint32_t n)
 	//
 	// LAB 2: Your code here.
 	result = (void *)nextfree;
-	nextfree = ROUNDUP(nextfree + (unsigned int)n, PGSIZE);
+	if(n > 0) {
+	    nextfree = ROUNDUP(nextfree + (unsigned int)n, PGSIZE);
 
-	if((unsigned int)nextfree < (unsigned int)end) {
-		panic("boot_alloc: Out of memory\n");
+	    //if((unsigned int)nextfree >= 0xF0400000) 4MB memory
+	    if((unsigned int)nextfree < (unsigned int)end) {
+		    panic("boot_alloc: out of memory.\n");
+	    }
 	}  
 	
 	return (void *)result;
@@ -418,7 +422,8 @@ page_init(void)
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}
-    //удаляем ненужные страницы
+    
+
     //page 0
     page_rmv(&pages[0]);
     //IO hole
@@ -426,7 +431,7 @@ page_init(void)
         ppage = pa2page(i);
         page_rmv(ppage);    
     }
-    /*for(i = KERNBASE; i < (unsigned int)boot_alloc(0); i += PGSIZE) {
+    /*for(i = (unsigned int)_start; i < (unsigned int)boot_alloc(0); i += PGSIZE) {
         ppage = pa2page(i);
         page_rmv(ppage);    
     } */
@@ -468,6 +473,10 @@ page_alloc(int alloc_flags)
 void
 page_free(struct PageInfo *pp)
 {
+	if(!pp) {
+	    //panic("page_free: pp is a null pointer.\n");
+	    return;
+	}
 	if(pp->pp_ref) {
 	    panic("page_free: pp->pp_ref is not zero.\n");
 	}
@@ -483,8 +492,13 @@ page_free(struct PageInfo *pp)
 void
 page_decref(struct PageInfo* pp)
 {
-	if (--pp->pp_ref == 0)
+	if(!pp) {
+	    //panic("page_free: pp is a null pointer.\n");
+	    return;
+	}
+	if (--pp->pp_ref == 0) {
 		page_free(pp);
+	}
 }
 
 // Given 'pgdir', a pointer to a page directory, pgdir_walk returns
@@ -512,9 +526,14 @@ page_decref(struct PageInfo* pp)
 pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
-	unsigned int pde;
+	pde_t pde;
 	unsigned int la = (unsigned int)va;
 	struct PageInfo *pp;
+
+	if(!pgdir) {
+	    //panic("pgdir_walk: pgdir is a null pointer.\n");
+	    return;
+	}
 
 	pde = pgdir[PDX(la)];
 	if(pde & PTE_P) {
@@ -545,6 +564,16 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 {
     pte_t *pte;
     unsigned int i;
+
+    if(!pgdir) {
+        //panic("boot_map_region: pgdir is a null pointer.\n");
+        return;
+    }
+    
+    if((va % PGSIZE) || (pa % PGSIZE) || (size % PGSIZE)) {
+        //panic("boot_map_region: pa, va or size is not multiple of PGSIZE.\n")
+        return;
+    }
 
     perm &= 0xFFF;
     for(i = 0; i < size; i += PGSIZE) {
@@ -580,6 +609,11 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
+	if(!pgdir) {
+	    //panic("page_fre: pgdir is a null pointer.\n");
+	    return;
+	}
+	
 	pte_t *pte = pgdir_walk(pgdir, va, 1);
 	perm &= 0xFFF;
 
