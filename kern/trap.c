@@ -329,7 +329,7 @@ trap_dispatch(struct Trapframe *tf)
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
-		panic("unhandled trap in kernel");
+		panic("trap_dispatch: unhandled trap in kernel.\n");
 	else {
 		env_destroy(curenv);
 		return;
@@ -409,9 +409,10 @@ page_fault_handler(struct Trapframe *tf)
 	// Handle kernel-mode page faults.
 
 	// LAB 3: Your code here.
+	
 	if ((tf->tf_cs & 3) == 0) {
-		cprintf("kernel fault va %08x ip %08x\n", fault_va, tf->tf_eip);
-		panic("page fault in kernel mode");
+		cprintf("page_fault_handler: kernel fault va %08x ip %08x.\n", fault_va, tf->tf_eip);
+		panic("page_fault_handler: page fault in kernel mode.\n");
 		return;
 	}
 
@@ -453,8 +454,8 @@ page_fault_handler(struct Trapframe *tf)
 
 	// Destroy the environment that caused the fault.
 	if(!curenv->env_pgfault_upcall) {
-	    cprintf("no page fault handler installed.\n");
-	    cprintf("[%08x] user fault va %08x ip %08x\n", curenv->env_id, fault_va, tf->tf_eip);
+	    cprintf("page_fault_handler: no page fault handler installed.\n");
+	    cprintf("page_fault_handler: [%08x] user fault va %08x ip %08x.\n", curenv->env_id, fault_va, tf->tf_eip);
 	    print_trapframe(tf);
 	    env_destroy(curenv);
     }
@@ -470,14 +471,14 @@ page_fault_handler(struct Trapframe *tf)
 	utf.utf_eflags = tf->tf_eflags;
 	utf.utf_esp = tf->tf_esp;
 
-	if((tf->tf_esp >= UXSTACKTOP-PGSIZE) && (tf->tf_esp < UXSTACKTOP)) {
+	if((tf->tf_esp >= (UXSTACKTOP - PGSIZE)) && (tf->tf_esp < UXSTACKTOP)) {
 	    tf->tf_esp -= 4;
 	} else {
 	    tf->tf_esp = UXSTACKTOP;
-	    //allocate another page for exception stack?
+	    
 	    if(tf->tf_esp < UXSTACKTOP - PGSIZE) {
-	        cprintf("user xception stack overflow\n");
-	        cprintf("[%08x] user fault va %08x ip %08x\n", curenv->env_id, fault_va, tf->tf_eip);
+	        cprintf("page_fault_handler: user exception stack overflow.\n");
+	        cprintf("page_fault_handler: [%08x] user fault va %08x ip %08x.\n", curenv->env_id, fault_va, tf->tf_eip);
 	        print_trapframe(tf);
 	        env_destroy(curenv);
 	        return;
@@ -486,7 +487,6 @@ page_fault_handler(struct Trapframe *tf)
     
     //push utf on stack
     *(struct UTrapFrame *) (tf->tf_esp) = utf;
-
     tf->tf_eip = (unsigned int)curenv->env_pgfault_upcall;
     envrun(curenv);
 }

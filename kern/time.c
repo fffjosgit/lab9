@@ -15,7 +15,7 @@ void
 time_tick(void)
 {
 	ticks++;
-	if (ticks * PERIOD < ticks)
+	if(ticks * PERIOD < ticks)
 		panic("time_tick: time overflowed");
 }
 
