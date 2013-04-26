@@ -585,7 +585,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
     }
     
     if((va % PGSIZE) || (pa % PGSIZE) || (size % PGSIZE)) {
-        panic("boot_map_region: pa, va or size is not multiple of PGSIZE.\n")
+        panic("boot_map_region: pa, va or size is not multiple of PGSIZE.\n");
         return;
     }
 
