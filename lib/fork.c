@@ -95,7 +95,7 @@ duppage(envid_t envid, unsigned pn)
 			panic("duppage: can't map page.\n");
 	    }
 	    //if ((ret = sys_page_map(curenv->envid, va, curenv->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
-	    if ((ret = sys_page_map(envid, va, thisenv->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
+	    if ((ret = sys_page_map(envid, va, thisenv->env_id, va, PTE_U | PTE_P | PTE_COW)) < 0) {
 		    //panic("sys_page_map error: %e", r);
 			panic("duppage: can't map page.\n");
 	    }
