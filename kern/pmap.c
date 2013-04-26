@@ -294,7 +294,7 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 
     if(!env) {
         //panic("user_mem_check: env is a null pointer.\n");
-        return;
+        return -E_FAULT;
     } 
 
     va_start = ROUNDDOWN((unsigned int)va, PGSIZE);
@@ -546,7 +546,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 
 	if(!pgdir) {
 	    //panic("pgdir_walk: pgdir is a null pointer.\n");
-	    return;
+	    return 0;
 	}
 
 	pde = pgdir[PDX(la)];
@@ -625,11 +625,11 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	if(!pgdir) {
 	    //panic("page_insert: pgdir is a null pointer.\n");
-	    return;
+	    return -E_NO_MEM;
 	}
 	if(!pp) {
 	    //panic("page_insert: pp is a null pointer.\n");
-	    return;
+	    return -E_NO_MEM;
 	}
 	
 	pte_t *pte = pgdir_walk(pgdir, va, 1);
@@ -670,7 +670,7 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	if(!pgdir) {
 	    //panic("page_lookup: pgdir is a null pointer.\n");
-	    return;
+	    return 0;
 	}
 	
 	pte_t *pte = pgdir_walk(pgdir, va, 0);
