@@ -305,6 +305,9 @@ trap_dispatch(struct Trapframe *tf)
 	case IRQ_OFFSET + IRQ_TIMER:
 	    //sched_yield();
 	    break;
+	case IRQ_OFFSET + IRQ_KBD:        //keyboard
+	    kbd_intr();
+	    return;
 	case T_SYSCALL:         //system call
 	    ret = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx,
 				      tf->tf_regs.reg_ecx, tf->tf_regs.reg_ebx,
@@ -391,10 +394,11 @@ trap(struct Trapframe *tf)
 	// If we made it to this point, then no other environment was
 	// scheduled, so we should return to the current environment
 	// if doing so makes sense.
-	if (curenv && curenv->env_status == ENV_RUNNING)
+	if (curenv && curenv->env_status == ENV_RUNNING) {
 		env_run(curenv);
-	else
+	} else {
 		sched_yield();
+	}
 }
 
 

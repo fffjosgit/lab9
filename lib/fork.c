@@ -26,8 +26,8 @@ pgfault(struct UTrapframe *utf)
 
 	// LAB 4: Your code here.
 
-	if (!((err & FEC_WR) && (vpt[VPN((unsigned int)addr)] & PTE_COW))) {
-		panic("not a write and not to a COW page, addr: %x, err: %x", addr, err);
+	if (!((err & FEC_WR) && (uvpt[VPN((unsigned int)addr)] & PTE_COW))) {
+		panic("pgfault: not a write and not to a COW page, addr: %x, err: %x.\n", addr, err);
 	}
 
 	// Allocate a new page, map it at a temporary location (PFTEMP),
@@ -39,21 +39,21 @@ pgfault(struct UTrapframe *utf)
 
 	// LAB 4: Your code here.
 
-	envid_t envid = sys_getenvid();
+	envid_t curenv = sys_getenvid();
 	void *va = ROUNDDOWN(addr, PGSIZE);
 	
-	if ((ret = sys_page_alloc(envid, (void *)PFTEMP, PTE_U | PTE_W | PTE_P)) < 0) {
+	if ((ret = sys_page_alloc(curenv, (void *)PFTEMP, PTE_U | PTE_W | PTE_P)) < 0) {
 		//panic("sys_page_alloc error: %e", r);
-		panic("sys_page_alloc error");
+		panic("pgfault: can't alloc page.\n");
 	}
 	memmove((void *)PFTEMP, va, PGSIZE);
-	if ((ret = sys_page_map(envid, (void *)PFTEMP, envid, va, PTE_U | PTE_W | PTE_P)) < 0)  {
+	if ((ret = sys_page_map(curenv, (void *)PFTEMP, curenv, va, PTE_U | PTE_W | PTE_P)) < 0)  {
 		//panic("sys_page_map error: %e", r);
-		panic("sys_page_map error");
+		panic("pgfault: can't map page.\n");
 	}
 	if ((ret = sys_page_unmap(envid, (void *)PFTEMP)) < 0) {
 		//panic("sys_page_unmap error: %e", r);
-		panic("sys_page_unmap error");
+		panic("pgfault: can't map page.\n");
 	}
 
 	//panic("pgfault not implemented");
@@ -76,32 +76,33 @@ static int
 duppage(envid_t envid, unsigned pn)
 {
 	int ret;
-	pte_t pte = vpn[pn];
+	pte_t pte = uvpt[pn];
 	unsigned int perm = 0;
 	void *va = (void *)(pn << PGSHIFT);
+	envid_t curenv = sys_getenvid();
 
 	if (!(pte & PTE_P)) {
 		return -E_INVAL;
 	}
 
-	/*if ((pte & PTE_W) && (pte & PTE_COW)) {
-        panic("PTE_W & PTE_COW\n");
-    }*/
+	if ((pte & PTE_W) && (pte & PTE_COW)) {
+        panic("duppage: PTE_W & PTE_COW.\n");
+    }
 
 	if (!(pte & PTE_SHARE) && ((pte & PTE_W) || (pte & PTE_COW))) {
 	    if ((ret = sys_page_map(curenv->env_id, va, envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
 		    //panic("sys_page_map error: %e", r);
-			panic("sys_page_map error");
+			panic("duppage: can't map page.\n");
 	    }
 	    //if ((ret = sys_page_map(curenv->envid, va, curenv->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
 	    if ((ret = sys_page_map(envid, va, curenv->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
 		    //panic("sys_page_map error: %e", r);
-			panic("sys_page_map error");
+			panic("duppage: can't map page.\n");
 	    }
 	} else {
 	    if ((ret = sys_page_map(curenv->env_id, va, envid, va, pte & PTE_SYSCALL)) < 0) {
 			//panic("sys_page_map error: %e", r);
-			panic("sys_page_map error");
+			panic("duppage: can't map page.\n");
 		}
 	}
 	
@@ -139,7 +140,7 @@ fork(void)
 
 	if((envid = sys_exofork()) < 0) {
 	    //panic("sys_exofork: error %e\n", envid);
-	    panic("fork: sys_exofork error");
+	    panic("fork: sys_exofork.\n");
 	}
 
 	if(envid == 0) {
