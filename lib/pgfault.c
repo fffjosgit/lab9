@@ -25,12 +25,13 @@ void
 set_pgfault_handler(void (*handler)(struct UTrapframe *utf))
 {
 	int ret = 0;
+	envid_t curenv = sys_getenvid();
 
 	if (_pgfault_handler == 0) {
 		// First time through!
 		// LAB 4: Your code here.
 
-		if ((ret = sys_page_alloc(curenv->env_id, (void *)(UXSTACKTO P -PGSIZE),
+		if ((ret = sys_page_alloc(curenv->env_id, (void *)(UXSTACKTOP -PGSIZE),
 								PTE_U | PTE_W | PTE_P)) < 0)  {
 			//panic("set_pgfault_handler: page alloc error: %e", r);
 			panic("set_pgfault_handler: page_alloc error");
