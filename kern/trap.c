@@ -491,7 +491,7 @@ page_fault_handler(struct Trapframe *tf)
 	}
     
     //push utf on stack
-    *((struct UTrapFrame *) (tf->tf_esp)) = utf;
+    *((struct UTrapframe *) (tf->tf_esp)) = utf;
     tf->tf_eip = (unsigned int)curenv->env_pgfault_upcall;
     env_run(curenv);
 }
