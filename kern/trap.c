@@ -13,6 +13,7 @@
 #include <kern/picirq.h>
 #include <kern/cpu.h>
 #include <kern/spinlock.h>
+#include <kern/picirq.h>
 
 static struct Taskstate ts;
 
@@ -492,6 +493,6 @@ page_fault_handler(struct Trapframe *tf)
     //push utf on stack
     *(struct UTrapFrame *) (tf->tf_esp) = utf;
     tf->tf_eip = (unsigned int)curenv->env_pgfault_upcall;
-    envrun(curenv);
+    env_run(curenv);
 }
 
