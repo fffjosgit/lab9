@@ -95,12 +95,12 @@ duppage(envid_t envid, unsigned pn)
 			panic("duppage: can't map page.\n");
 	    }
 	    //if ((ret = sys_page_map(curenv->envid, va, curenv->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
-	    if ((ret = sys_page_map(envid, va, thisen->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
+	    if ((ret = sys_page_map(envid, va, thisenv->envid, va, PTE_U | PTE_P | PTE_COW)) < 0) {
 		    //panic("sys_page_map error: %e", r);
 			panic("duppage: can't map page.\n");
 	    }
 	} else {
-	    if ((ret = sys_page_map(thisen->env_id, va, envid, va, pte & PTE_SYSCALL)) < 0) {
+	    if ((ret = sys_page_map(thisenv->env_id, va, envid, va, pte & PTE_SYSCALL)) < 0) {
 			//panic("sys_page_map error: %e", r);
 			panic("duppage: can't map page.\n");
 		}
