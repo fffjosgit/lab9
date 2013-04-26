@@ -17,7 +17,6 @@ pgfault(struct UTrapframe *utf)
 	void *addr = (void *)utf->utf_fault_va;
 	uint32_t err = utf->utf_err;
 	int ret;
-	envid_t curenv_id = sys_getenvid();
 
 	// Check that the faulting access was (1) a write, and (2) to a
 	// copy-on-write page.  If not, panic.
@@ -43,16 +42,16 @@ pgfault(struct UTrapframe *utf)
 	envid_t curenv = sys_getenvid();
 	void *va = ROUNDDOWN(addr, PGSIZE);
 	
-	if ((ret = sys_page_alloc(curenv_id, (void *)PFTEMP, PTE_U | PTE_W | PTE_P)) < 0) {
+	if ((ret = sys_page_alloc(curenv, (void *)PFTEMP, PTE_U | PTE_W | PTE_P)) < 0) {
 		//panic("sys_page_alloc error: %e", r);
 		panic("pgfault: can't alloc page.\n");
 	}
 	memmove((void *)PFTEMP, va, PGSIZE);
-	if ((ret = sys_page_map(curenv_id, (void *)PFTEMP, curenv, va, PTE_U | PTE_W | PTE_P)) < 0)  {
+	if ((ret = sys_page_map(curenv, (void *)PFTEMP, curenv, va, PTE_U | PTE_W | PTE_P)) < 0)  {
 		//panic("sys_page_map error: %e", r);
 		panic("pgfault: can't map page.\n");
 	}
-	if ((ret = sys_page_unmap(curenv_id, (void *)PFTEMP)) < 0) {
+	if ((ret = sys_page_unmap(curenv, (void *)PFTEMP)) < 0) {
 		//panic("sys_page_unmap error: %e", r);
 		panic("pgfault: can't map page.\n");
 	}
@@ -152,9 +151,9 @@ fork(void)
 	pn = UTOP / PGSIZE - 1;
 	//? what is this????
 	while (--pn >= 0) {
-		if (!(vpd[pn >> 10] & PTE_P)) { 
+		if (!(uvpd[pn >> 10] & PTE_P)) { 
 			pn = (pn >> 10) << 10;
-	    } else if (vpt[pn] & PTE_P) {
+	    } else if (uvpt[pn] & PTE_P) {
 			duppage(envid, pn);
 		}
     }
