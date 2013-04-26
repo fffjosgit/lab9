@@ -358,13 +358,13 @@ mem_init_mp(void)
 
 	//boot_map_region(kern_pgdir, IOMEMBASE, -IOMEMBASE, IOMEM_PADDR, PTE_W);
 
-	uintptr_t kstack_start = KSTACKTOP - KSTKSIZE;
+	/*uintptr_t kstack_start = KSTACKTOP - KSTKSIZE;
 
     int i;
     for (i = 0; i != NCPU; i++) {
         boot_map_region(kern_pgdir, kstack_start, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W);
         kstack_start -= (KSTKSIZE + KSTKGAP);
-    }
+    } */
 
 }
 
@@ -507,7 +507,7 @@ void
 page_decref(struct PageInfo* pp)
 {
 	if(!pp) {
-	    //panic("page_free: pp is a null pointer.\n");
+	    panic("page_free: pp is a null pointer.\n");
 	    return;
 	}
 	if (--pp->pp_ref == 0) {
@@ -545,7 +545,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	struct PageInfo *pp;
 
 	if(!pgdir) {
-	    //panic("pgdir_walk: pgdir is a null pointer.\n");
+	    panic("pgdir_walk: pgdir is a null pointer.\n");
 	    return 0;
 	}
 
@@ -580,12 +580,12 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
     unsigned int i;
 
     if(!pgdir) {
-        //panic("boot_map_region: pgdir is a null pointer.\n");
+        panic("boot_map_region: pgdir is a null pointer.\n");
         return;
     }
     
     if((va % PGSIZE) || (pa % PGSIZE) || (size % PGSIZE)) {
-        //panic("boot_map_region: pa, va or size is not multiple of PGSIZE.\n")
+        panic("boot_map_region: pa, va or size is not multiple of PGSIZE.\n")
         return;
     }
 
@@ -769,14 +769,15 @@ mmio_map_region(physaddr_t pa, size_t size)
 	//
 	// Your code here:
 
-	pa = ROUNDUP(pa, PGSIZE);
+	/*pa = ROUNDUP(pa, PGSIZE);
 	if((unsigned int)pa >= MMIOLIM) {
 	    panic("mmio_map_region: pa should be below/equal MMIOLIM.\n");    
 	}
 	base += size;
 	boot_map_region(kern_pgdir, base, size, pa, PTE_W | PTE_PCD | PTE_PWT);
 
-	return (void *)base;
+	return (void *)base;*/
+	return 0;
 	//panic("mmio_map_region not implemented");
 }
 
