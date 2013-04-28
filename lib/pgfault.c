@@ -27,14 +27,14 @@ set_pgfault_handler(void (*handler)(struct UTrapframe *utf))
 	int ret = 0;
 	envid_t curenv_id = sys_getenvid();
 
-	if (_pgfault_handler == 0) {
+	if (!_pgfault_handler) {
 		// First time through!
 		// LAB 4: Your code here.
 
-		if ((ret = sys_page_alloc(curenv_id, (void *)(UXSTACKTOP -PGSIZE),
+		if ((ret = sys_page_alloc(curenv_id, (void *)(UXSTACKTOP - PGSIZE),
 								PTE_U | PTE_W | PTE_P)) < 0)  {
 			//panic("set_pgfault_handler: page alloc error: %e", r);
-			panic("set_pgfault_handler: page_alloc error");
+			panic("set_pgfault_handler: page_alloc failed.\n");
 		}
 		//panic("set_pgfault_handler not implemented");
 	}
@@ -43,7 +43,7 @@ set_pgfault_handler(void (*handler)(struct UTrapframe *utf))
 	_pgfault_handler = handler;
 	if ((ret = sys_env_set_pgfault_upcall(curenv_id, _pgfault_upcall)) < 0) {
 		//panic("set_pgfault_handler: set pgfault upcall error: %e", r);
-		panic("set_pgfault_handler: sys_env_set_pgfault_upcall error");
+		panic("set_pgfault_handler: sys_env_set_pgfault_upcall failed");
 	}
 
 	return;

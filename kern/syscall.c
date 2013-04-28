@@ -22,7 +22,7 @@ sys_cputs(const char *s, size_t len)
 	// Destroy the environment if not.
 
 	// LAB 3: Your code here.
-	user_mem_assert(curenv, (void *)s, len, 0);
+	user_mem_assert(curenv, (void *)s, len, PTE_U);
 
 	// Print the string supplied by the user.
 	cprintf("%.*s", len, s);
@@ -51,15 +51,17 @@ sys_getenvid(void)
 static int
 sys_env_destroy(envid_t envid)
 {
-	int r;
+	int ret;
 	struct Env *e;
 
-	if ((r = envid2env(envid, &e, 1)) < 0)
-		return r;
-	if (e == curenv)
+	if((ret = envid2env(envid, &e, 1)) < 0) {
+		return ret;
+	}
+	if(e == curenv) {
 		cprintf("[%08x] exiting gracefully\n", curenv->env_id);
-	else
+	} else {
 		cprintf("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
+	}
 	env_destroy(e);
 	return 0;
 }
@@ -87,14 +89,14 @@ sys_exofork(void)
 	struct Env *env = 0;
 	int ret;
     if((ret = env_alloc(&env, curenv->env_id)) < 0) {
-        return ret; 
+        //cprintf("sys_exofork: %e\n", r);
+        return -E_NO_FREE_ENV; 
     }
 
     env->env_status = ENV_NOT_RUNNABLE;
     env->env_tf = curenv->env_tf;
     env->env_tf.tf_regs.reg_eax = 0; //return 0
-    env->env_pgfault_upcall = curenv->env_pgfault_upcall;
-     
+    env->env_pgfault_upcall = curenv->env_pgfault_upcall;     
 	
 	return env->env_id;
 
@@ -157,6 +159,10 @@ sys_env_set_pgfault_upcall(envid_t envid, void *func)
 	// LAB 4: Your code here.
 	struct Env *env = 0;
 	int ret = 0;
+	
+	if (!func) {
+		return -E_INVAL;
+	}
 	if((ret = envid2env(envid, &env, 1)) < 0) {
         return ret;
 	}
@@ -395,7 +401,8 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 
     target->env_ipc_perm = 0;
     
-    if(srcva) {
+    //if(((unsignd int) e->env_ipc_dstva) < UTOP && ((unsigned int) srcva < UTOP))
+    if(srcva && env->env_ipc_dstva) {
         if(((unsigned int)srcva >= UTOP) || ((unsigned int)srcva % PGSIZE)) {
 			return -E_INVAL;
 		}
@@ -418,6 +425,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
     }
     
 	target->env_ipc_recving = 0;
+	//e->env_ipc_dstva = (void *) USTACKTOP;
 	target->env_ipc_from = curenv->env_id;
 	target->env_ipc_value = value;
 	target->env_status = ENV_RUNNABLE;
@@ -425,7 +433,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
     return 0;	
 
 	// LAB 4: Your code here.
-	panic("sys_ipc_try_send not implemented");
+	//panic("sys_ipc_try_send not implemented");
 }
 
 // Block until a value is ready.  Record that you want to receive
@@ -442,7 +450,8 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 static int
 sys_ipc_recv(void *dstva)
 {
-	if(((unsigned int)dstva >= UTOP) || ((unsigned int)dstva % PGSIZE)) {
+	//if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE))
+	if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
@@ -455,7 +464,7 @@ sys_ipc_recv(void *dstva)
 	return 0;
 	
 	// LAB 4: Your code here.
-	panic("sys_ipc_recv not implemented");	
+	//panic("sys_ipc_recv not implemented");	
 }
 
 // Dispatches to the correct kernel function, passing the arguments.
@@ -527,6 +536,6 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	}
 
 	return ret;
-	panic("syscall not implemented");
+	//panic("syscall not implemented");
 }
 

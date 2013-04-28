@@ -89,7 +89,7 @@ envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 	// (i.e., does not refer to a _previous_ environment
 	// that used the same slot in the envs[] array).
 	e = &envs[ENVX(envid)];
-	if (e->env_status == ENV_FREE || e->env_id != envid) {
+	if ((e->env_status == ENV_FREE) || (e->env_id != envid)) {
 		*env_store = 0;
 		return -E_BAD_ENV;
 	}
@@ -99,7 +99,7 @@ envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 	// If checkperm is set, the specified environment
 	// must be either the current environment
 	// or an immediate child of the current environment.
-	if (checkperm && e != curenv && e->env_parent_id != curenv->env_id) {
+	if ((checkperm && e != curenv) && (e->env_parent_id != curenv->env_id)) {
 		*env_store = 0;
 		return -E_BAD_ENV;
 	}
@@ -133,7 +133,7 @@ env_init(void)
         if (i == 0) {
             env_free_list = &envs[0];
         } else {
-            envs[i-1].env_link = &envs[i];
+            envs[i - 1].env_link = &envs[i];
             if (i == NENV - 1) {
                 envs[i].env_link = NULL;
             }
@@ -182,8 +182,9 @@ env_setup_vm(struct Env *e)
 	struct PageInfo *p = NULL;
 
 	// Allocate a page for the page directory
-	if (!(p = page_alloc(ALLOC_ZERO)))
+	if (!(p = page_alloc(ALLOC_ZERO))) {
 		return -E_NO_MEM;
+	}
 
 	// Now, set e->env_pgdir and initialize the page directory.
 	//
@@ -204,8 +205,12 @@ env_setup_vm(struct Env *e)
 	// LAB 3: Your code here.
 	p->pp_ref++;
 	e->env_pgdir = page2kva(p);
-	memset(e->env_pgdir, 0, PDX(UTOP) * 4);
-	memmove(e->env_pgdir + PDX(UTOP), kern_pgdir + PDX(UTOP), PGSIZE - PDX(UTOP) * 4);
+	//memset(e->env_pgdir, 0, PDX(UTOP) * 4);
+	memset(e->env_pgdir, 0x0, PGSIZE);
+	//memmove(e->env_pgdir + PDX(UTOP), kern_pgdir + PDX(UTOP), PGSIZE - PDX(UTOP) * 4);
+	for (i = PDX(UTOP); i < NPDENTRIES; i++) {
+		e->env_pgdir[i] = kern_pgdir[i];
+	}
 
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
@@ -230,17 +235,20 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	int r;
 	struct Env *e;
 
-	if (!(e = env_free_list))
+	if (!(e = env_free_list)) {
 		return -E_NO_FREE_ENV;
+	}
 
 	// Allocate and set up the page directory for this environment.
-	if ((r = env_setup_vm(e)) < 0)
+	if ((r = env_setup_vm(e)) < 0) {
 		return r;
+	}
 
 	// Generate an env_id for this environment.
 	generation = (e->env_id + (1 << ENVGENSHIFT)) & ~(NENV - 1);
-	if (generation <= 0)	// Don't create a negative env_id.
+	if (generation <= 0) {	// Don't create a negative env_id.
 		generation = 1 << ENVGENSHIFT;
+	}
 	e->env_id = generation | (e - envs);
 
 	// Set the basic status variables.
@@ -278,6 +286,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 
 	// Enable interrupts while in user mode.
 	// LAB 4: Your code here.
+	e->env_tf.tf_eflags |= FL_IF;
 
 	// Clear the page fault handler until user installs one.
 	e->env_pgfault_upcall = 0;
@@ -313,19 +322,18 @@ region_alloc(struct Env *e, void *va, size_t len)
 
 	struct PageInfo *p;
 	void *va_end = (void *)ROUNDUP(va + len, PGSIZE);
-	int r;
+	int ret;
 
 	va = ROUNDDOWN(va, PGSIZE);
-	while (va < va_end) {
+	for(; va < va_end; va += PGSIZE) {
 		if (!(p = page_alloc(0))) {
-			panic("region_alloc");
+			panic("region_alloc: can't alloc page.\n");
 	    }
 
-		if ((r = page_insert(e->env_pgdir, p, va, PTE_W |PTE_U)) < 0) {
-			panic("segment_alloc: %e", r);
+		if ((r = page_insert(e->env_pgdir, p, va, PTE_W | PTE_U)) < 0) {
+			panic("region_alloc: page_insert failed.\n");
+			//panic("segment_alloc: %e", r);
 		}
-
-		va += PGSIZE;
 	}
 }
 
@@ -447,7 +455,7 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 	struct Elf *elfhdr = (struct Elf *) binary;
 	int r = 0;
 	
-	if (elfhdr->e_magic != ELF_MAGIC || elfhdr->e_type != ET_EXEC) {
+	if ((elfhdr->e_magic != ELF_MAGIC) || (elfhdr->e_type != ET_EXEC)) {
 		panic("load icode: can't load elf file.\n");
 	}
 	ph = (struct Proghdr *) ((uint8_t *) elfhdr + elfhdr->e_phoff);
@@ -463,24 +471,18 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 		}
 		region_alloc(e, (void *)ph->p_va, ph->p_memsz);
 
-		memmove((void *) ph->p_va, binary+ph->p_offset, ph->p_filesz);
-		memset((void *) ph->p_va + ph->p_filesz, 0, (ph->p_memsz - ph->p_filesz));
+		memmove((void *)ph->p_va, binary + ph->p_offset, ph->p_filesz);
+		memset((void *)ph->p_va + ph->p_filesz, 0, (ph->p_memsz - ph->p_filesz));
 	}
 	lcr3(PADDR(kern_pgdir));
 
-	e->env_tf.tf_eip = ((struct Elf *)binary)->e_entry;
+	e->env_tf.tf_eip = elfhdr->e_entry;
 
 	// Now map one page for the program's initial stack
 	// at virtual address USTACKTOP - PGSIZE.
 
 	// LAB 3: Your code here.
-
-	if (!(p = page_alloc(0))) {
-	    panic("load icode: page_alloc problems");
-	}
-	if((r = page_insert(e->env_pgdir, p, (void *)(USTACKTOP - PGSIZE), PTE_W | PTE_U)) < 0) {
-	    panic("load_icode: page_insert problems");    
-	}
+	region_alloc(e, (void *)(USTACKTOP - PGSIZE) PGSIZE);
 }
 
 //
@@ -497,7 +499,7 @@ env_create(uint8_t *binary, size_t size, enum EnvType type)
 	struct Env *env = 0;
 	
 	if(env_alloc(&env, 0) < 0) {
-	    panic("env_create: env_alloc problems");    
+	    panic("env_create: env_alloc failed".\n);    
 	}
 
 	load_icode(env, binary, size);
@@ -517,8 +519,9 @@ env_free(struct Env *e)
 	// If freeing the current environment, switch to kern_pgdir
 	// before freeing the page directory, just in case the page
 	// gets reused.
-	if (e == curenv)
+	if (e == curenv) {
 		lcr3(PADDR(kern_pgdir));
+	}
 
 	// Note the environment's demise.
 	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
@@ -528,8 +531,9 @@ env_free(struct Env *e)
 	for (pdeno = 0; pdeno < PDX(UTOP); pdeno++) {
 
 		// only look at mapped page tables
-		if (!(e->env_pgdir[pdeno] & PTE_P))
+		if (!(e->env_pgdir[pdeno] & PTE_P)) {
 			continue;
+		}
 
 		// find the pa and va of the page table
 		pa = PTE_ADDR(e->env_pgdir[pdeno]);
@@ -537,8 +541,9 @@ env_free(struct Env *e)
 
 		// unmap all PTEs in this page table
 		for (pteno = 0; pteno <= PTX(~0); pteno++) {
-			if (pt[pteno] & PTE_P)
+			if (pt[pteno] & PTE_P) {
 				page_remove(e->env_pgdir, PGADDR(pdeno, pteno, 0));
+			}
 		}
 
 		// free the page table itself
@@ -568,7 +573,7 @@ env_destroy(struct Env *e)
 	// If e is currently running on other CPUs, we change its state to
 	// ENV_DYING. A zombie environment will be freed the next time
 	// it traps to the kernel.
-	if (e->env_status == ENV_RUNNING && curenv != e) {
+	if ((e->env_status == ENV_RUNNING) && (curenv != e)) {
 		e->env_status = ENV_DYING;
 		return;
 	}
@@ -645,6 +650,6 @@ env_run(struct Env *e)
 	lcr3(PADDR(curenv->env_pgdir));
 	env_pop_tf(&curenv->env_tf);
 
-	panic("env_run not yet implemented");
+	//panic("env_run not yet implemented");
 }
 

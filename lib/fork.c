@@ -81,7 +81,7 @@ duppage(envid_t envid, unsigned pn)
 	void *va = (void *)(pn << PGSHIFT);
 	envid_t curenv = sys_getenvid();
 
-	if (!(pte & PTE_P)) {
+	if (!(pte & PTE_P) && !(pte & PTE_U)) {
 		return -E_INVAL;
 	}
 
@@ -104,8 +104,7 @@ duppage(envid_t envid, unsigned pn)
 			//panic("sys_page_map error: %e", r);
 			panic("duppage: can't map page.\n");
 		}
-	}
-	
+	}	
 
 	return 0;
 
