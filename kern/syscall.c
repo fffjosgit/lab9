@@ -392,7 +392,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
     int ret = 0;
 
     if((ret = envid2env(envid, &target, 0)) < 0) {
-        return ret;
+        return -E_BAD_ENV;
 	}
 	
 	if(!target->env_ipc_recving) {
@@ -452,7 +452,7 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	//if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE))
-	if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE)) {
+	if(((unsigned int)dstva >= UTOP) || ((unsigned int)dstva % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
