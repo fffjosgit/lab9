@@ -5,5 +5,7 @@
 .globl tmp_entry
 tmp_entry:
 
-    nop
-    nop
+    movw $5307h, %ax 
+	movw $0003h, %cx 
+	movw $0001h, %bx
+	int $0x15  
