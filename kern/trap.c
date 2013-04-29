@@ -304,7 +304,7 @@ trap_dispatch(struct Trapframe *tf)
     case T_SIMDERR:         // SIMD floating point error
         break;
 	case IRQ_OFFSET + IRQ_TIMER:
-	    //sched_yield();
+	    sched_yield();
 	    break;
 	case IRQ_OFFSET + IRQ_KBD:        //keyboard
 	    kbd_intr();
@@ -332,8 +332,9 @@ trap_dispatch(struct Trapframe *tf)
 
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
-	if (tf->tf_cs == GD_KT)
+	if (tf->tf_cs == GD_KT) {
 		panic("trap_dispatch: unhandled trap in kernel.\n");
+	}
 	else {
 		env_destroy(curenv);
 		return;
@@ -349,13 +350,15 @@ trap(struct Trapframe *tf)
 
 	// Halt the CPU if some other CPU has called panic()
 	extern char *panicstr;
-	if (panicstr)
+	if (panicstr) {
 		asm volatile("hlt");
+	}
 
 	// Re-acqurie the big kernel lock if we were halted in
 	// sched_yield()
-	if (xchg(&thiscpu->cpu_status, CPU_STARTED) == CPU_HALTED)
+	if (xchg(&thiscpu->cpu_status, CPU_STARTED) == CPU_HALTED) {
 		lock_kernel();
+	}
 	// Check that interrupts are disabled.  If this assertion
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.
