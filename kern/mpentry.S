@@ -36,7 +36,7 @@
 .code16           
 .globl mpentry_start
 mpentry_start:
-	cli            
+	cli
 
 	xorw    %ax, %ax
 	movw    %ax, %ds

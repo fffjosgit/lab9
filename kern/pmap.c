@@ -217,7 +217,7 @@ mem_init(void)
 	boot_map_region(kern_pgdir, KERNBASE, 0xFFFFFFFF - KERNBASE + 1, 0, PTE_W);
 
 	// Initialize the SMP-related parts of the memory map
-	//mem_init_mp();
+	mem_init_mp();
 
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
@@ -292,10 +292,10 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	perm &= 0xFFF;
 	perm |= PTE_P;
 
-    /*if(!env) {
-        //panic("user_mem_check: env is a null pointer.\n");
+    if(!env) {
+        panic("user_mem_check: env is a null pointer.\n");
         return -E_FAULT;
-    }*/
+    }
 
     va_start = ROUNDDOWN((unsigned int)va, PGSIZE);
 	va_end = ROUNDUP((unsigned int)(va + len), PGSIZE);
@@ -356,15 +356,15 @@ mem_init_mp(void)
 	//
 	// LAB 4: Your code here:
 
-	//boot_map_region(kern_pgdir, IOMEMBASE, -IOMEMBASE, IOMEM_PADDR, PTE_W);
+	boot_map_region(kern_pgdir, IOMEMBASE, -IOMEMBASE, IOMEM_PADDR, PTE_W);
 
-	/*uintptr_t kstack_start = KSTACKTOP - KSTKSIZE;
+	uintptr_t kstack_start = KSTACKTOP - KSTKSIZE;
 
     int i;
     for (i = 0; i != NCPU; i++) {
         boot_map_region(kern_pgdir, kstack_start, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W);
         kstack_start -= (KSTKSIZE + KSTKGAP);
-    } */
+    } 
 
 }
 
@@ -486,10 +486,10 @@ page_alloc(int alloc_flags)
 void
 page_free(struct PageInfo *pp)
 {
-	/*if(!pp) {
-	    //panic("page_free: pp is a null pointer.\n");
+	if(!pp) {
+	    panic("page_free: pp is a null pointer.\n");
 	    return;
-	}*/
+	}
 
 	if(pp->pp_ref) {
 	    panic("page_free: pp->pp_ref is not zero.\n");
@@ -506,10 +506,10 @@ page_free(struct PageInfo *pp)
 void
 page_decref(struct PageInfo* pp)
 {
-	/*if(!pp) {
+	if(!pp) {
 	    panic("page_free: pp is a null pointer.\n");
 	    return;
-	}*/
+	}
 	if (--pp->pp_ref == 0) {
 		page_free(pp);
 	}
@@ -544,10 +544,10 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	unsigned int la = (unsigned int)va;
 	struct PageInfo *pp;
 
-	/*if(!pgdir) {
+	if(!pgdir) {
 	    panic("pgdir_walk: pgdir is a null pointer.\n");
 	    return 0;
-	}*/
+	}
 
 	pde = pgdir[PDX(la)];
 	if(pde & PTE_P) {
