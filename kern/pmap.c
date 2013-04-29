@@ -220,7 +220,7 @@ mem_init(void)
 	mem_init_mp();
 
 	// Check that the initial page directory has been set up correctly.
-	check_kern_pgdir();
+	//check_kern_pgdir();
 
 	//////////////////////////////////////////////////////////////////////
 	// Map the 'envs' array read-only by the user at linear address UENVS
@@ -231,7 +231,7 @@ mem_init(void)
 	boot_map_region(kern_pgdir, UENVS, env_size, PADDR(envs), PTE_U);
 
 	// Check that the initial page directory has been set up correctly.
-	//check_kern_pgdir();
+	check_kern_pgdir();
 	
 	// Switch from the minimal entry page directory to the full kern_pgdir
 	// page table we just created.	Our instruction pointer should be
