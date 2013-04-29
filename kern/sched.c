@@ -69,15 +69,15 @@ sched_yield(void)
 	// LAB 2: Your code here.
 	uint32_t envid = thiscpu->cpu_env ? ENVX(thiscpu->cpu_env->env_id) : 0;
 	uint32_t first_eid = (++envid) % NENV;
-	uint32_t next_envid;
+	int next_envid;
 	int i;
 
 	//perform_io_simulation();
 
-	int x = get_highest_env(envid, ENV_RUNNABLE);
-	if(x >= 0) {
-	    cprintf("envrun RUNNABLE: %d\n", x);
-	    env_run(&envs[x]);    
+	int next_envid = get_highest_env(envid, ENV_RUNNABLE);
+	if(next_envid >= 0) {
+	    cprintf("envrun RUNNABLE: %d\n", next_envid);
+	    env_run(&envs[next_envid]);    
 	}
 
 	next_envid = get_highest_env(envid, ENV_RUNNING);
