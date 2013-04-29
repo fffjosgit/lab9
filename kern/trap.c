@@ -271,7 +271,7 @@ trap_dispatch(struct Trapframe *tf)
         break;
     case T_BRKPT:      		// breakpoint
         panic("breakpoint here");
-        break;
+        return;
     case T_OFLOW:      		// overflow
         break;
     case T_BOUND:      		// bounds check
@@ -293,7 +293,7 @@ trap_dispatch(struct Trapframe *tf)
         break;
     case T_PGFLT:     		// page fault
         page_fault_handler(tf);
-        break;
+        return;
     /* #define T_RES    15 */	// reserved
     case T_FPERR:     		// floating point error
         break;
@@ -305,7 +305,7 @@ trap_dispatch(struct Trapframe *tf)
         break;
 	case IRQ_OFFSET + IRQ_TIMER:
 	    sched_yield();
-	    break;
+	    return;
 	case IRQ_OFFSET + IRQ_KBD:        //keyboard
 	    kbd_intr();
 	    return;
