@@ -29,8 +29,8 @@ typedef int32_t envid_t;
 #define NENV			(1 << LOG2NENV)
 #define ENVX(envid)		((envid) & (NENV - 1))
 
-#define ENV_PRIO_NORMAL 0
-#define ENV_PRIO_HIGH 4
+#define ENV_PRIORITY_NORMAL 0
+#define ENV_PRIORITY_HIGH 4
 
 
 // Values of env_status in struct Env
