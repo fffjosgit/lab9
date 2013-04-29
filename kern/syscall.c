@@ -12,6 +12,20 @@
 #include <kern/console.h>
 #include <kern/sched.h>
 
+//Change env priority
+//return: old priority if all is ok and -1 on error
+
+static int 
+sys_set_priority(envid_t envid, int priority) 
+{
+	int old_priority = -1;
+	if((p >= ENV_PRIORITY_NORMAL) && (p <= ENV_PRIO_HIGH)) {
+		old_priority = curenv->env_priority;
+		curenv->env_priority = priority;
+	}
+	return old_priority; 
+}
+
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -478,6 +492,10 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	//DX, CX, BX, DI, SI - function op
 	int ret = 0;
 	switch(syscallno) {
+	case SYS_set_priority:
+	    //static void sys_set_priority(envid_t envid, int priority);
+	    ret = sys_set_priority((envid_t)a1, (int)a2);
+	    break;
 	case SYS_cputs:
 	    //static void sys_cputs(const char *s, size_t len);
 	    sys_cputs((const char *)a1, (size_t)a2);
@@ -531,7 +549,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	    ret = sys_ipc_recv((void *)a1);
 	    break;
 	default:
-	    panic("syscall: unknown syscalno");
+	    panic("syscall: unknown syscalno.\n");
 	    //return -E_INVAL;
 	    break;
 	}

@@ -123,13 +123,11 @@ env_init(void)
 	int i;
     for(i = 0; i < NENV; i++) {
         memset(&envs[i], 0, sizeof(envs[i]));
-        envs[i].env_id = 0;
-        envs[i].env_parent_id = 0;
+        
         envs[i].env_type = ENV_TYPE_USER;
         envs[i].env_status = ENV_FREE;
-        envs[i].env_runs = 0;
-        envs[i].env_pgdir = NULL;
-    
+        envs[i].env_priority = ENV_PRIORITY_NORMAL;
+            
         if (i == 0) {
             env_free_list = &envs[0];
         } else {
