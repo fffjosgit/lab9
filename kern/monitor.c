@@ -24,6 +24,7 @@ struct Command {
 
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
+	{ "shutdown", "Shut down command", mon_shutdown },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
 };
 #define NCOMMANDS (sizeof(commands)/sizeof(commands[0]))
@@ -37,6 +38,13 @@ mon_help(int argc, char **argv, struct Trapframe *tf)
 
 	for (i = 0; i < NCOMMANDS; i++)
 		cprintf("%s - %s\n", commands[i].name, commands[i].desc);
+	return 0;
+}
+
+int
+mon_shutdown(int argc, char **argv, struct Trapframe *tf)
+{
+	tmp_entry();
 	return 0;
 }
 
