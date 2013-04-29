@@ -68,7 +68,7 @@ mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
-	unsigned int *ebp = (int *)read_ebp();
+	unsigned int *ebp = (unsigned int *)read_ebp();
     unsigned int eip;
     int i;
     struct Eipdebuginfo info;
