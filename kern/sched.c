@@ -88,7 +88,7 @@ sched_yield(void)
 		next_envid = (first_eid + i) % NENV;
 		if (envs[next_envid].env_status == ENV_RUNNABLE) {
 			cprintf("envrun RUNNABLE: %d\n", next_envid);
-			
+			env_run(&envs[next_envid]);
 			break;
 		}
 	}
