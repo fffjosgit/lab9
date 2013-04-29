@@ -47,9 +47,9 @@ i386_init(void)
 	//mp_init();
 	//lapic_init();
 
-	//pic_init();
-	//rtc_init();
-	//time_init();
+	pic_init();
+	rtc_init();
+	time_init();
 
 #if defined(TEST)
 	// Don't touch -- used by grading script!
