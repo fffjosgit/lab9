@@ -74,7 +74,7 @@ sched_yield(void)
 
 	//perform_io_simulation();
 
-	if((next_envid = get_highest_env(envid, ENV_RUNNABLE)) >= 0) {
+	/*if((next_envid = get_highest_env(envid, ENV_RUNNABLE)) >= 0) {
 	    cprintf("envrun RUNNABLE: %d\n", next_envid);
 	    env_run(&envs[next_envid]);    
 	}
@@ -82,16 +82,16 @@ sched_yield(void)
 	if((next_envid = get_highest_env(envid, ENV_RUNNING)) >= 0) {
 	    cprintf("envrun RUNNING: %d\n", next_envid);
 	    env_run(&envs[next_envid]);    
-	}
+	}*/
 	
-	/*for (i = 0; i < NENV; i++) {
+	for (i = 0; i < NENV; i++) {
 		next_envid = (first_eid + i) % NENV;
 		if (envs[next_envid].env_status == ENV_RUNNABLE) {
 			cprintf("envrun RUNNABLE: %d\n", next_envid);
 			
 			break;
 		}
-	}*/
+	}
 
 	/*for (i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
