@@ -769,14 +769,14 @@ mmio_map_region(physaddr_t pa, size_t size)
 	//
 	// Your code here:
 
-	/*pa = ROUNDUP(pa, PGSIZE);
+	pa = ROUNDUP(pa, PGSIZE);
 	if((unsigned int)pa >= MMIOLIM) {
 	    panic("mmio_map_region: pa should be below/equal MMIOLIM.\n");    
 	}
 	base += size;
 	boot_map_region(kern_pgdir, base, size, pa, PTE_W | PTE_PCD | PTE_PWT);
 
-	return (void *)base;*/
+	return (void *)base;
 	return 0;
 	//panic("mmio_map_region not implemented");
 }
