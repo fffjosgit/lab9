@@ -41,8 +41,8 @@ i386_init(void)
 	mem_init();
 
 	// Lab 3 user environment initialization functions
-	//env_init();
-	//trap_init();
+	env_init();
+	trap_init();
 
 	//mp_init();
 	//lapic_init();
