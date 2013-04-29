@@ -16,7 +16,7 @@
 //return: old priority if all is ok and -1 on error
 
 static int 
-sys_set_priority(envid_t envid, int priority) 
+sys_set_priority(int priority) 
 {
 	int old_priority = -1;
 	if((priority >= ENV_PRIORITY_NORMAL) && (priority <= ENV_PRIORITY_HIGH)) {
