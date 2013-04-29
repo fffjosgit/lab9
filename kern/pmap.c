@@ -1,4 +1,4 @@
-/* See COPYRIGHT for copyright information. */
+ /* See COPYRIGHT for copyright information. */
 
 #include <inc/x86.h>
 #include <inc/mmu.h>
@@ -579,10 +579,10 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
     pte_t *pte;
     unsigned int i;
 
-    /*if(!pgdir) {
+    if(!pgdir) {
         panic("boot_map_region: pgdir is a null pointer.\n");
         return;
-    } */
+    } 
     
     if((va % PGSIZE) || (pa % PGSIZE) || (size % PGSIZE)) {
         panic("boot_map_region: pa, va or size is not multiple of PGSIZE.\n");
@@ -624,11 +624,11 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	if(!pgdir) {
-	    //panic("page_insert: pgdir is a null pointer.\n");
+	    panic("page_insert: pgdir is a null pointer.\n");
 	    return -E_NO_MEM;
 	}
 	if(!pp) {
-	    //panic("page_insert: pp is a null pointer.\n");
+	    panic("page_insert: pp is a null pointer.\n");
 	    return -E_NO_MEM;
 	}
 	
@@ -669,7 +669,7 @@ struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	if(!pgdir) {
-	    //panic("page_lookup: pgdir is a null pointer.\n");
+	    panic("page_lookup: pgdir is a null pointer.\n");
 	    return 0;
 	}
 	
@@ -707,7 +707,7 @@ void
 page_remove(pde_t *pgdir, void *va)
 {
 	if(!pgdir) {
-	    //panic("page_remove: pgdir is a null pointer.\n");
+	    panic("page_remove: pgdir is a null pointer.\n");
 	    return;
 	}
 	
