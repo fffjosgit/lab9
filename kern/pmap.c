@@ -177,9 +177,9 @@ mem_init(void)
 	// or page_insert
 	page_init();
 
-	//check_page_free_list(1);
-	//check_page_alloc();
-	//check_page();
+	check_page_free_list(1);
+	check_page_alloc();
+	check_page();
 
 	//////////////////////////////////////////////////////////////////////
 	// Now we set up virtual memory
@@ -246,7 +246,7 @@ mem_init(void)
 	kern_pgdir[0] = kern_pgdir[PDX(KERNBASE)];
 	lcr3(PADDR(kern_pgdir));
 
-	//check_page_free_list(0);
+    check_page_free_list(0);
 
 	// entry.S set the really important flags in cr0 (including enabling
 	// paging).  Here we configure the rest of the flags that we care about.
