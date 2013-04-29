@@ -403,7 +403,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
     
     //if(((unsignd int) e->env_ipc_dstva) < UTOP && ((unsigned int) srcva < UTOP))
     //&& target->env_ipc_dstva
-    if(srcva) {
+    if(srcva && target->env_ipc_dstva) {
         if(((unsigned int)srcva >= UTOP) || ((unsigned int)srcva % PGSIZE)) {
 			return -E_INVAL;
 		}
