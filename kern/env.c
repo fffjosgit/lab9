@@ -330,7 +330,7 @@ region_alloc(struct Env *e, void *va, size_t len)
 			panic("region_alloc: can't alloc page.\n");
 	    }
 
-		if ((r = page_insert(e->env_pgdir, p, va, PTE_W | PTE_U)) < 0) {
+		if ((ret = page_insert(e->env_pgdir, p, va, PTE_W | PTE_U)) < 0) {
 			panic("region_alloc: page_insert failed.\n");
 			//panic("segment_alloc: %e", r);
 		}
@@ -482,7 +482,7 @@ load_icode(struct Env *e, uint8_t *binary, size_t size)
 	// at virtual address USTACKTOP - PGSIZE.
 
 	// LAB 3: Your code here.
-	region_alloc(e, (void *)(USTACKTOP - PGSIZE) PGSIZE);
+	region_alloc(e, (void *)(USTACKTOP - PGSIZE), PGSIZE);
 }
 
 //
@@ -499,7 +499,7 @@ env_create(uint8_t *binary, size_t size, enum EnvType type)
 	struct Env *env = 0;
 	
 	if(env_alloc(&env, 0) < 0) {
-	    panic("env_create: env_alloc failed".\n);    
+	    panic("env_create: env_alloc failed.\n");    
 	}
 
 	load_icode(env, binary, size);
