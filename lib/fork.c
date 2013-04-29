@@ -139,7 +139,7 @@ fork(void)
 
 	if((envid = sys_exofork()) < 0) {
 	    //panic("sys_exofork: error %e\n", envid);
-	    panic("fork: sys_exofork.\n");
+	    panic("fork: sys_exofork failed.\n");
 	}
 
 	if(envid == 0) {

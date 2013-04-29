@@ -142,12 +142,8 @@ sys_env_set_status(envid_t envid, int status)
 	    return -E_BAD_ENV;
 	}
 	switch(status) {
-		case ENV_FREE:
-	    case ENV_DYING:
-	    case ENV_RUNNABLE:
-	    case ENV_RUNNING:
+		case ENV_RUNNABLE:
 	    case ENV_NOT_RUNNABLE:
-	    case ENV_BLOCKING:
 	        env->env_status = status;
 	        break;
 	    default:
