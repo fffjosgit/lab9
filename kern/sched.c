@@ -74,9 +74,9 @@ sched_yield(void)
 
 	//perform_io_simulation();
 
-	next_envid = get_highest_env(envid, ENV_RUNNABLE);
-	if(next_envid >= 0) {
-	    cprintf("envrun RUNNABLE: %d\n", next_envid);
+	int x = get_highest_env(envid, ENV_RUNNABLE);
+	if(x >= 0) {
+	    cprintf("envrun RUNNABLE: %d\n", x);
 	    env_run(&envs[next_envid]);    
 	}
 
