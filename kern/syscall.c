@@ -19,7 +19,7 @@ static int
 sys_set_priority(envid_t envid, int priority) 
 {
 	int old_priority = -1;
-	if((p >= ENV_PRIORITY_NORMAL) && (p <= ENV_PRIO_HIGH)) {
+	if((priority >= ENV_PRIORITY_NORMAL) && (priority <= ENV_PRIORITY_HIGH)) {
 		old_priority = curenv->env_priority;
 		curenv->env_priority = priority;
 	}
