@@ -93,14 +93,14 @@ sched_yield(void)
 		}
 	}
 
-	/*for (i = 0; i < NENV; i++) {
+	for (i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
         if ((envs[next_envid].env_status == ENV_RUNNING) && (envs[next_envid].env_cpunum == thiscpu->cpu_id)) {
             cprintf("envrun RUNNING: %d\n", next_envid);
             env_run(&envs[next_envid]);
             break;
         }
-    }*/   
+    }   
 
 	// sched_halt never returns
 	sched_halt();
