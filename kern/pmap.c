@@ -160,7 +160,7 @@ mem_init(void)
 	// array.  'npages' is the number of physical pages in memory.
 	// Your code goes here:
     page_size = ROUNDUP((sizeof(struct PageInfo) * npages), PGSIZE);
-    pages = boot_alloc(page_size);
+    pages = (struct PageInfo* )boot_alloc(page_size);
 	
 	//////////////////////////////////////////////////////////////////////
 	// Make 'envs' point to an array of size 'NENV' of 'struct Env'.
@@ -435,8 +435,7 @@ page_init(void)
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
-	}
-    
+	}    
 
     //page 0
     page_rmv(&pages[0]);
