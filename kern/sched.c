@@ -7,7 +7,7 @@
 
 void sched_halt(void);
 
-void perform_io_simulation( void )
+/*void perform_io_simulation( void )
 {
 	if ( in_clock_interrupt() ) {
 		int i;
@@ -18,6 +18,30 @@ void perform_io_simulation( void )
 			}
 		}
 	}
+}*/
+
+int get_highest_env(int x, int status) 
+{
+	int i, j; 
+	int maxprio = -1; 
+	int ret = -1;
+		
+	for(j = 0; j < NENV; j++) {
+		if(j == x) {
+			continue;
+		} else {
+		    i = (j + x) % NENV; 
+		}
+		if(envs[i].env_status == status) {
+		    if(envs[i].env_priority == ENV_PRIORITY_HIGH) {
+		        return i;
+		    } else if(envs[i].env_priority > maxprio) {
+		        maxprio = envs[i].env_priority;
+		        ret = i;
+		    } 
+		}
+	}
+	return ret;
 }
 
 
@@ -50,23 +74,33 @@ sched_yield(void)
 
 	//perform_io_simulation();
 
-	for (i = 0; i < NENV; i++) {
-		next_envid = (first_eid+i) % NENV;
-		if (envs[next_envid].env_status == ENV_RUNNABLE) {
-			cprintf("envrun RUNNABLE: %d\n", next_envid);
-			env_run(&envs[next_envid]);
-			break;
-		}
+	if((next_envid = get_highest_env(envid, ENV_RUNNABLE)) >= 0) {
+	    cprintf("envrun RUNNABLE: %d\n", next_envid);
+	    env_run(&envs[next_envid]);    
 	}
 
-	for (i = 0; i < NENV; i++) {
+	if((next_envid = get_highest_env(envid, ENV_RUNNING)) >= 0) {
+	    cprintf("envrun RUNNING: %d\n", next_envid);
+	    env_run(&envs[next_envid]);    
+	}
+	
+	/*for (i = 0; i < NENV; i++) {
+		next_envid = (first_eid + i) % NENV;
+		if (envs[next_envid].env_status == ENV_RUNNABLE) {
+			cprintf("envrun RUNNABLE: %d\n", next_envid);
+			
+			break;
+		}
+	}*/
+
+	/*for (i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
         if ((envs[next_envid].env_status == ENV_RUNNING) && (envs[next_envid].env_cpunum == thiscpu->cpu_id)) {
             cprintf("envrun RUNNING: %d\n", next_envid);
             env_run(&envs[next_envid]);
             break;
         }
-    }   
+    }*/   
 
 	// sched_halt never returns
 	sched_halt();
