@@ -493,8 +493,8 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	int ret = 0;
 	switch(syscallno) {
 	case SYS_set_priority:
-	    //static void sys_set_priority(envid_t envid, int priority);
-	    ret = sys_set_priority((envid_t)a1, (int)a2);
+	    //static void sys_set_priority(int priority);
+	    ret = sys_set_priority((int)a1);
 	    break;
 	case SYS_cputs:
 	    //static void sys_cputs(const char *s, size_t len);
