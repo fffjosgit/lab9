@@ -77,7 +77,7 @@ sched_yield(void)
 	int x = get_highest_env(envid, ENV_RUNNABLE);
 	if(x >= 0) {
 	    cprintf("envrun RUNNABLE: %d\n", x);
-	    env_run(&envs[next_envid]);    
+	    env_run(&envs[x]);    
 	}
 
 	next_envid = get_highest_env(envid, ENV_RUNNING);
