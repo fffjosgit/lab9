@@ -77,9 +77,9 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
         cprintf("ebp %08x eip %x ", ebp, eip);			
         cprintf("args");
 
-        for(i = 2; i < 7; i++) {
+        /*for(i = 2; i < 7; i++) {
             cprintf(" %08x", ebp[i]);
-        }
+        }*/
         cprintf("\n");
     
         if(!debuginfo_eip(eip, &info)) {
