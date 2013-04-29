@@ -292,10 +292,10 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	perm &= 0xFFF;
 	perm |= PTE_P;
 
-    if(!env) {
+    /*if(!env) {
         //panic("user_mem_check: env is a null pointer.\n");
         return -E_FAULT;
-    } 
+    }*/
 
     va_start = ROUNDDOWN((unsigned int)va, PGSIZE);
 	va_end = ROUNDUP((unsigned int)(va + len), PGSIZE);
@@ -486,10 +486,11 @@ page_alloc(int alloc_flags)
 void
 page_free(struct PageInfo *pp)
 {
-	if(!pp) {
+	/*if(!pp) {
 	    //panic("page_free: pp is a null pointer.\n");
 	    return;
-	}
+	}*/
+
 	if(pp->pp_ref) {
 	    panic("page_free: pp->pp_ref is not zero.\n");
 	}
@@ -505,10 +506,10 @@ page_free(struct PageInfo *pp)
 void
 page_decref(struct PageInfo* pp)
 {
-	if(!pp) {
+	/*if(!pp) {
 	    panic("page_free: pp is a null pointer.\n");
 	    return;
-	}
+	}*/
 	if (--pp->pp_ref == 0) {
 		page_free(pp);
 	}
@@ -543,10 +544,10 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	unsigned int la = (unsigned int)va;
 	struct PageInfo *pp;
 
-	if(!pgdir) {
+	/*if(!pgdir) {
 	    panic("pgdir_walk: pgdir is a null pointer.\n");
 	    return 0;
-	}
+	}*/
 
 	pde = pgdir[PDX(la)];
 	if(pde & PTE_P) {
@@ -578,10 +579,10 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
     pte_t *pte;
     unsigned int i;
 
-    if(!pgdir) {
+    /*if(!pgdir) {
         panic("boot_map_region: pgdir is a null pointer.\n");
         return;
-    }
+    } */
     
     if((va % PGSIZE) || (pa % PGSIZE) || (size % PGSIZE)) {
         panic("boot_map_region: pa, va or size is not multiple of PGSIZE.\n");
