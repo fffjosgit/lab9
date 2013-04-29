@@ -38,9 +38,9 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	return ret;
 }
 
-void sys_set_priority(int priority) 
+int sys_set_priority(int priority) 
 {
-	syscall(SYS_set_priority, 0, priority, 0, 0, 0, 0);
+	return syscall(SYS_set_priority, 0, priority, 0, 0, 0, 0);
 }
 
 void
