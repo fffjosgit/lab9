@@ -177,9 +177,9 @@ mem_init(void)
 	// or page_insert
 	page_init();
 
-	//check_page_free_list(1);
-	//check_page_alloc();
-	//check_page();
+	check_page_free_list(1);
+	check_page_alloc();
+	check_page();
 
 	//////////////////////////////////////////////////////////////////////
 	// Now we set up virtual memory
