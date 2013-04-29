@@ -41,15 +41,15 @@ i386_init(void)
 	mem_init();
 
 	// Lab 3 user environment initialization functions
-	env_init();
-	trap_init();
+	//env_init();
+	//trap_init();
 
 	//mp_init();
 	//lapic_init();
 
-	pic_init();
+	//pic_init();
 	//rtc_init();
-	time_init();
+	//time_init();
 
 #if defined(TEST)
 	// Don't touch -- used by grading script!
@@ -67,7 +67,7 @@ i386_init(void)
 	//ENV_CREATE(prog_sc_test9, ENV_TYPE_KERNEL, 9);
 	//ENV_CREATE(prog_sc_test10, ENV_TYPE_KERNEL, 10);
 
-	NEW_ENV_CREATE(user_primes, ENV_TYPE_USER);
+	//NEW_ENV_CREATE(user_primes, ENV_TYPE_USER);
 #endif // TEST*
 
 	// We only have one user environment for now, so just run it.
