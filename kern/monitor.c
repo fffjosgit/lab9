@@ -45,7 +45,6 @@ mon_help(int argc, char **argv, struct Trapframe *tf)
 int
 mon_shutdown(int argc, char **argv, struct Trapframe *tf)
 {
-	lcr3(PADDR(kern_pgdir));
 	extern int tmp_entry(void);
 	tmp_entry();
 	return 0;
