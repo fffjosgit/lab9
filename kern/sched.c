@@ -48,7 +48,7 @@ sched_yield(void)
 	uint32_t next_envid;
 	int i;
 
-	perform_io_simulation();
+	//perform_io_simulation();
 
 	for (i = 0; i < NENV; i++) {
 		next_envid = (first_eid+i) % NENV;
@@ -58,6 +58,15 @@ sched_yield(void)
 			break;
 		}
 	}
+
+	for (i = 0; i < NENV; i++) {
+        next_envid = (first_eid + i) % NENV;
+        if ((envs[next_envid].env_status == ENV_RUNNING) && (envs[next_envid].env_cpunum == thiscpu->cpu_id)) {
+            cprintf("envrun RUNNING: %d\n", next_envid);
+            env_run(&envs[next_envid]);
+            break;
+        }
+    }   
 
 	// sched_halt never returns
 	sched_halt();
