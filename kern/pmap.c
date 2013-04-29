@@ -177,9 +177,9 @@ mem_init(void)
 	// or page_insert
 	page_init();
 
-	check_page_free_list(1);
-	check_page_alloc();
-	check_page();
+	//check_page_free_list(1);
+	//check_page_alloc();
+	//check_page();
 
 	//////////////////////////////////////////////////////////////////////
 	// Now we set up virtual memory
@@ -778,12 +778,11 @@ mmio_map_region(physaddr_t pa, size_t size)
 	if((unsigned int)(base + size) >= MMIOLIM) {
 	    panic("mmio_map_region: pa should be below/equal MMIOLIM.\n");    
 	}
-	//base += size;
 	boot_map_region(kern_pgdir, base, size, pa, PTE_W | PTE_PCD | PTE_PWT);
 
 	void *b = (void *)base;
 	base += size;
-	return (void *)b;
+	return b;
 	//panic("mmio_map_region not implemented");
 }
 
