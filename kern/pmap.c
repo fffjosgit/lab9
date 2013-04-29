@@ -334,7 +334,7 @@ user_mem_assert(struct Env *env, const void *va, size_t len, int perm)
 }
 
 // Modify mappings in kern_pgdir to support SMP
-//   - Map the per-CPU stacks in the region [KSTACKTOP-PTSIZE, KSTACKTOP)
+//   - Map the per-CPU stacks in the region [KSTACKTOP - PTSIZE, KSTACKTOP)
 //
 static void
 mem_init_mp(void)
@@ -356,7 +356,7 @@ mem_init_mp(void)
 	//
 	// LAB 4: Your code here:
 
-	boot_map_region(kern_pgdir, IOMEMBASE, -IOMEMBASE, IOMEM_PADDR, PTE_W);
+	//boot_map_region(kern_pgdir, MMIOBASE, -IOMEMBASE, IOMEM_PADDR, PTE_W);
 
 	uintptr_t kstack_start = KSTACKTOP - KSTKSIZE;
 
