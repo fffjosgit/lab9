@@ -769,15 +769,21 @@ mmio_map_region(physaddr_t pa, size_t size)
 	//
 	// Your code here:
 
-	pa = ROUNDUP(pa, PGSIZE);
-	if((unsigned int)pa >= MMIOLIM) {
+	// Map [va, va+size) of virtual address space to physical [pa, pa+size)
+    // in the page table rooted at pgdir.  Size is a multiple of PGSIZE.
+    // Use permission bits perm|PTE_P for the entries.
+    //boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
+
+	size = ROUNDUP(size, PGSIZE);
+	if((unsigned int)(base + size) >= MMIOLIM) {
 	    panic("mmio_map_region: pa should be below/equal MMIOLIM.\n");    
 	}
-	base += size;
+	//base += size;
 	boot_map_region(kern_pgdir, base, size, pa, PTE_W | PTE_PCD | PTE_PWT);
 
-	return (void *)base;
-	return 0;
+	void *b = (void *)base;
+	base += size;
+	return (void *)b;
 	//panic("mmio_map_region not implemented");
 }
 
