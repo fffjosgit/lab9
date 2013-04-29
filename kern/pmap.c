@@ -220,7 +220,7 @@ mem_init(void)
 	//mem_init_mp();
 
 	// Check that the initial page directory has been set up correctly.
-	//check_kern_pgdir();
+	check_kern_pgdir();
 
 	//////////////////////////////////////////////////////////////////////
 	// Map the 'envs' array read-only by the user at linear address UENVS
