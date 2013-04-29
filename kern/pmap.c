@@ -255,7 +255,7 @@ mem_init(void)
 	cr0 &= ~(CR0_TS | CR0_EM);
 	lcr0(cr0);
 
-    //check_page_installed_pgdir();
+    check_page_installed_pgdir();
 
     kern_pgdir[0] = 0;
     lcr3(PADDR(kern_pgdir));	
