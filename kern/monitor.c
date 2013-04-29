@@ -45,7 +45,8 @@ int
 mon_shutdown(int argc, char **argv, struct Trapframe *tf)
 {
 	extern int tmp_entry(void);
-	tmp_entry();
+	//tmp_entry();
+	__asm ("int 0x14");
 	return 0;
 }
 
