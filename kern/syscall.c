@@ -452,7 +452,7 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	//if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE))
-	if(((unsigned int)dstva >= UTOP) || ((unsigned int)dstva % PGSIZE)) {
+	if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE)) {
 	    return -E_INVAL;
 	}
 
