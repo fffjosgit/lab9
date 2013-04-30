@@ -75,12 +75,12 @@ sched_yield(void)
 	//perform_io_simulation();
 
 	if((next_envid = get_highest_env(envid, ENV_RUNNABLE)) >= 0) {
-	    cprintf("envrun RUNNABLE: %d with priority: %d\n", next_envid, envs[next_envid].env_priority);
+	    cprintf("envrun RUNNABLE: %08x with priority: %d\n", next_envid, envs[next_envid].env_priority);
 	    env_run(&envs[next_envid]);    
 	}
 
 	if((next_envid = get_highest_env(envid, ENV_RUNNING)) >= 0) {
-	    cprintf("envrun RUNNING: %d with priority: %d\n", next_envid, envs[next_envid].env_priority);
+	    cprintf("envrun RUNNING: %08x with priority: %d\n", next_envid, envs[next_envid].env_priority);
 	    env_run(&envs[next_envid]);    
 	}
 	
