@@ -24,43 +24,45 @@ delay(void)
 
 /***** Serial I/O code *****/
 
-#define COM1		0x3F8
+#define   COM1	         0x3F8
 
-#define COM_RX		0	// In:	Receive buffer (DLAB=0)
-#define COM_TX		0	// Out: Transmit buffer (DLAB=0)
-#define COM_DLL		0	// Out: Divisor Latch Low (DLAB=1)
-#define COM_DLM		1	// Out: Divisor Latch High (DLAB=1)
-#define COM_IER		1	// Out: Interrupt Enable Register
-#define   COM_IER_RDI	0x01	//   Enable receiver data interrupt
-#define COM_IIR		2	// In:	Interrupt ID Register
-#define COM_FCR		2	// Out: FIFO Control Register
-#define COM_LCR		3	// Out: Line Control Register
-#define	  COM_LCR_DLAB	0x80	//   Divisor latch access bit
-#define	  COM_LCR_WLEN8	0x03	//   Wordlength: 8 bits
-#define COM_MCR		4	// Out: Modem Control Register
-#define	  COM_MCR_RTS	0x02	// RTS complement
-#define	  COM_MCR_DTR	0x01	// DTR complement
-#define	  COM_MCR_OUT2	0x08	// Out2 complement
-#define COM_LSR		5	// In:	Line Status Register
-#define   COM_LSR_DATA	0x01	//   Data available
-#define   COM_LSR_TXRDY	0x20	//   Transmit buffer avail
-#define   COM_LSR_TSRE	0x40	//   Transmitter off
+#define   COM_RX		 0	    // In:	Receive buffer (DLAB=0)
+#define   COM_TX		 0	    // Out: Transmit buffer (DLAB=0)
+#define   COM_DLL		 0	    // Out: Divisor Latch Low (DLAB=1)
+#define   COM_DLM		 1	    // Out: Divisor Latch High (DLAB=1)
+#define   COM_IER		 1	    // Out: Interrupt Enable Register
+#define   COM_IER_RDI	 0x01	//   Enable receiver data interrupt
+#define   COM_IIR		 2	    // In:	Interrupt ID Register
+#define   COM_FCR		 2	    // Out: FIFO Control Register
+#define   COM_LCR		 3	    // Out: Line Control Register
+#define	  COM_LCR_DLAB	 0x80	//   Divisor latch access bit
+#define	  COM_LCR_WLEN8	 0x03	//   Wordlength: 8 bits
+#define   COM_MCR		 4	    // Out: Modem Control Register
+#define	  COM_MCR_RTS	 0x02	// RTS complement
+#define	  COM_MCR_DTR	 0x01	// DTR complement
+#define	  COM_MCR_OUT2	 0x08	// Out2 complement
+#define   COM_LSR		 5	    // In:	Line Status Register
+#define   COM_LSR_DATA	 0x01	//   Data available
+#define   COM_LSR_TXRDY	 0x20	//   Transmit buffer avail
+#define   COM_LSR_TSRE	 0x40	//   Transmitter off
 
 static bool serial_exists;
 
 static int
 serial_proc_data(void)
 {
-	if (!(inb(COM1+COM_LSR) & COM_LSR_DATA))
+	if(!(inb(COM1+COM_LSR) & COM_LSR_DATA)) {
 		return -1;
+	}
 	return inb(COM1+COM_RX);
 }
 
 void
 serial_intr(void)
 {
-	if (serial_exists)
+	if(serial_exists) {
 		cons_intr(serial_proc_data);
+	}
 }
 
 static void
@@ -68,10 +70,9 @@ serial_putc(int c)
 {
 	int i;
 
-	for (i = 0;
-	     !(inb(COM1 + COM_LSR) & COM_LSR_TXRDY) && i < 12800;
-	     i++)
+	for(i = 0; !(inb(COM1 + COM_LSR) & COM_LSR_TXRDY) && (i < 12800); i++) {
 		delay();
+	}
 
 	outb(COM1 + COM_TX, c);
 }
@@ -80,26 +81,26 @@ static void
 serial_init(void)
 {
 	// Turn off the FIFO
-	outb(COM1+COM_FCR, 0);
+	outb(COM1 + COM_FCR, 0);
 
 	// Set speed; requires DLAB latch
-	outb(COM1+COM_LCR, COM_LCR_DLAB);
-	outb(COM1+COM_DLL, (uint8_t) (115200 / 9600));
-	outb(COM1+COM_DLM, 0);
+	outb(COM1 + COM_LCR, COM_LCR_DLAB);
+	outb(COM1 + COM_DLL, (uint8_t) (115200 / 9600));
+	outb(COM1 + COM_DLM, 0);
 
 	// 8 data bits, 1 stop bit, parity off; turn off DLAB latch
-	outb(COM1+COM_LCR, COM_LCR_WLEN8 & ~COM_LCR_DLAB);
+	outb(COM1 + COM_LCR, COM_LCR_WLEN8 & ~COM_LCR_DLAB);
 
 	// No modem controls
-	outb(COM1+COM_MCR, 0);
+	outb(COM1 + COM_MCR, 0);
 	// Enable rcv interrupts
-	outb(COM1+COM_IER, COM_IER_RDI);
+	outb(COM1 + COM_IER, COM_IER_RDI);
 
 	// Clear any preexisting overrun indications and interrupts
 	// Serial port doesn't exist if COM_LSR returns 0xFF
-	serial_exists = (inb(COM1+COM_LSR) != 0xFF);
-	(void) inb(COM1+COM_IIR);
-	(void) inb(COM1+COM_RX);
+	serial_exists = (inb(COM1 + COM_LSR) != 0xFF);
+	(void) inb(COM1 + COM_IIR);
+	(void) inb(COM1 + COM_RX);
 
 }
 
@@ -114,8 +115,9 @@ lpt_putc(int c)
 {
 	int i;
 
-	for (i = 0; !(inb(0x378+1) & 0x80) && i < 12800; i++)
+	for(i = 0; !(inb(0x378+1) & 0x80) && (i < 12800); i++) {
 		delay();
+	}
 	outb(0x378+0, c);
 	outb(0x378+2, 0x08|0x04|0x01);
 	outb(0x378+2, 0x08);
@@ -164,10 +166,11 @@ static void
 cga_putc(int c)
 {
 	// if no attribute given, then use black on white
-	if (!(c & ~0xFF))
+	if(!(c & ~0xFF)) {
 		c |= 0x0700;
+	}
 
-	switch (c & 0xff) {
+	switch(c & 0xff) {
 	case '\b':
 		if (crt_pos > 0) {
 			crt_pos--;
@@ -195,10 +198,10 @@ cga_putc(int c)
 	// What is the purpose of this?
 	if (crt_pos >= CRT_SIZE) {
 		int i;
-
 		memmove(crt_buf, crt_buf + CRT_COLS, (CRT_SIZE - CRT_COLS) * sizeof(uint16_t));
-		for (i = CRT_SIZE - CRT_COLS; i < CRT_SIZE; i++)
+		for(i = CRT_SIZE - CRT_COLS; i < CRT_SIZE; i++) {
 			crt_buf[i] = 0x0700 | ' ';
+		}
 		crt_pos -= CRT_COLS;
 	}
 
@@ -320,21 +323,22 @@ kbd_proc_data(void)
 	uint8_t data;
 	static uint32_t shift;
 
-	if ((inb(KBSTATP) & KBS_DIB) == 0)
+	if((inb(KBSTATP) & KBS_DIB) == 0) {
 		return -1;
+	}
 
 	data = inb(KBDATAP);
 
-	if (data == 0xE0) {
+	if(data == 0xE0) {
 		// E0 escape character
 		shift |= E0ESC;
 		return 0;
-	} else if (data & 0x80) {
+	}else if(data & 0x80) {
 		// Key released
 		data = (shift & E0ESC ? data : data & 0x7F);
 		shift &= ~(shiftcode[data] | E0ESC);
 		return 0;
-	} else if (shift & E0ESC) {
+	}else if(shift & E0ESC) {
 		// Last character was an E0 escape; or with 0x80
 		data |= 0x80;
 		shift &= ~E0ESC;
@@ -345,15 +349,16 @@ kbd_proc_data(void)
 
 	c = charcode[shift & (CTL | SHIFT)][data];
 	if (shift & CAPSLOCK) {
-		if ('a' <= c && c <= 'z')
+		if (('a' <= c) && (c <= 'z')) {
 			c += 'A' - 'a';
-		else if ('A' <= c && c <= 'Z')
+		} else if (('A' <= c) && (c <= 'Z')) {
 			c += 'a' - 'A';
+		}
 	}
 
 	// Process special keys
 	// Ctrl-Alt-Del: reboot
-	if (!(~shift & (CTL | ALT)) && c == KEY_DEL) {
+	if (!(~shift & (CTL | ALT)) && (c == KEY_DEL)) {
 		cprintf("Rebooting!\n");
 		outb(0x92, 0x3); // courtesy of Chris Frost
 	}
@@ -397,12 +402,14 @@ cons_intr(int (*proc)(void))
 {
 	int c;
 
-	while ((c = (*proc)()) != -1) {
-		if (c == 0)
+	while((c = (*proc)()) != -1) {
+		if(c == 0) {
 			continue;
+		}
 		cons.buf[cons.wpos++] = c;
-		if (cons.wpos == CONSBUFSIZE)
+		if(cons.wpos == CONSBUFSIZE) {
 			cons.wpos = 0;
+		}
 	}
 }
 
@@ -419,10 +426,11 @@ cons_getc(void)
 	kbd_intr();
 
 	// grab the next character from the input buffer.
-	if (cons.rpos != cons.wpos) {
+	if(cons.rpos != cons.wpos) {
 		c = cons.buf[cons.rpos++];
-		if (cons.rpos == CONSBUFSIZE)
+		if(cons.rpos == CONSBUFSIZE) {
 			cons.rpos = 0;
+		}
 		return c;
 	}
 	return 0;
