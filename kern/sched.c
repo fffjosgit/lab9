@@ -46,6 +46,8 @@ int get_highest_env(int x, int status)
 
 
 // Choose a user environment to run and run it.
+//shed with priority
+//random, if we have more then one highest priority env
 void
 sched_yield(void)
 {
