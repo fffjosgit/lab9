@@ -12,7 +12,7 @@
 #include <kern/console.h>
 #include <kern/sched.h>
 
-//Change env priority
+//Change env priority to priority
 //return: old priority if all is ok and -1 on error
 
 static int 
@@ -30,16 +30,15 @@ sys_set_priority(int priority)
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
 static void
-sys_cputs(const char *s, size_t len)
+sys_cputs(const char *str, size_t length)
 {
 	// Check that the user has permission to read memory [s, s+len).
 	// Destroy the environment if not.
 
-	// LAB 3: Your code here.
-	user_mem_assert(curenv, (void *)s, len, PTE_U);
+	user_mem_assert(curenv, (void *)str, length, PTE_U);
 
 	// Print the string supplied by the user.
-	cprintf("%.*s", len, s);
+	cprintf("%.*s", length, str);
 }
 
 // Read a character from the system console without blocking.
@@ -66,17 +65,17 @@ static int
 sys_env_destroy(envid_t envid)
 {
 	int ret;
-	struct Env *e;
+	struct Env *env;
 
-	if((ret = envid2env(envid, &e, 1)) < 0) {
+	if((ret = envid2env(envid, &env, 1)) < 0) {
 		return ret;
 	}
-	if(e == curenv) {
+	if(env == curenv) {
 		cprintf("[%08x] exiting gracefully\n", curenv->env_id);
 	} else {
-		cprintf("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
+		cprintf("[%08x] destroying %08x\n", curenv->env_id, env->env_id);
 	}
-	env_destroy(e);
+	env_destroy(env);
 	return 0;
 }
 
@@ -115,7 +114,7 @@ sys_exofork(void)
 	return env->env_id;
 
 	// LAB 4: Your code here.
-	panic("sys_exofork not implemented");
+	//panic("sys_exofork not implemented");
 }
 
 // Set envid's env_status to status, which must be ENV_RUNNABLE
@@ -174,10 +173,10 @@ sys_env_set_pgfault_upcall(envid_t envid, void *func)
 		return -E_INVAL;
 	}
 	if((ret = envid2env(envid, &env, 1)) < 0) {
-        return ret;
+        return -E_BAD_ENV;
 	}
 
-	user_mem_assert(env, func, 4, 0);
+	//user_mem_assert(env, func, 4, 0);
 	env->env_pgfault_upcall = func;
 			
 	return 0;
@@ -227,7 +226,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	}
 
 	if((ret = envid2env(envid, &env, 1)) < 0) {
-        return ret;
+        return -E_BAD_ENV;
 	}
 	
 	if(!(pp = page_alloc(ALLOC_ZERO))) {
@@ -242,7 +241,6 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	//cprintf("alloc page: [%08x].\n", page2pa(page));
 	return 0;
 	
-	// LAB 4: Your code here.
 	//panic("sys_page_alloc not implemented");
 }
 
@@ -296,7 +294,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	}
 
     if((ret = envid2env(srcenvid, &srcenv, 1)) < 0) {
-        return ret;
+        return -E_BAD_ENV;
 	}    
 
     if(!(pp = page_lookup(srcenv->env_pgdir, srcva, &srcpte))) {
@@ -308,7 +306,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
     }
 
     if((ret = envid2env(dstenvid, &dstenv, 1)) < 0) {
-        return ret;
+        return -E_BAD_ENV;
 	}
 
     if((ret = page_insert(dstenv->env_pgdir, pp, dstva, perm)) < 0) {
@@ -322,7 +320,7 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	return 0;
 	
 	// LAB 4: Your code here.
-	panic("sys_page_map not implemented");
+	//panic("sys_page_map not implemented");
 }
 
 // Unmap the page of memory at 'va' in the address space of 'envid'.
@@ -344,7 +342,7 @@ sys_page_unmap(envid_t envid, void *va)
 	}
 	
 	if((ret = envid2env(envid, &env, 1)) < 0) {
-        return ret;
+        return -E_BAD_ENV;
 	}
 
 	page_remove(env->env_pgdir, va);
@@ -352,7 +350,7 @@ sys_page_unmap(envid_t envid, void *va)
 	return 0;
 	
 	// LAB 4: Your code here.
-	panic("sys_page_unmap not implemented");
+	//panic("sys_page_unmap not implemented");
 }
 
 // Try to send 'value' to the target env 'envid'.
@@ -546,7 +544,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	    break;
 	default:
 	    panic("syscall: unknown syscalno.\n");
-	    //return -E_INVAL;
+	    return -E_INVAL;
 	    break;
 	}
 

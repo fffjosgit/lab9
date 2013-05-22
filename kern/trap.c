@@ -334,8 +334,7 @@ trap_dispatch(struct Trapframe *tf)
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT) {
 		panic("trap_dispatch: unhandled trap in kernel.\n");
-	}
-	else {
+	} else {
 		env_destroy(curenv);
 		return;
 	}
@@ -349,16 +348,16 @@ trap(struct Trapframe *tf)
 	asm volatile("cld" ::: "cc");
 
 	// Halt the CPU if some other CPU has called panic()
-	extern char *panicstr;
+	/*extern char *panicstr;
 	if (panicstr) {
 		asm volatile("hlt");
 	}
-
+    */
 	// Re-acqurie the big kernel lock if we were halted in
 	// sched_yield()
-	if (xchg(&thiscpu->cpu_status, CPU_STARTED) == CPU_HALTED) {
+	/*if (xchg(&thiscpu->cpu_status, CPU_STARTED) == CPU_HALTED) {
 		lock_kernel();
-	}
+	}*/
 	// Check that interrupts are disabled.  If this assertion
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.
@@ -398,7 +397,7 @@ trap(struct Trapframe *tf)
 	// If we made it to this point, then no other environment was
 	// scheduled, so we should return to the current environment
 	// if doing so makes sense.
-	if (curenv && curenv->env_status == ENV_RUNNING) {
+	if (curenv && (curenv->env_status == ENV_RUNNING)) {
 		env_run(curenv);
 	} else {
 		sched_yield();
@@ -416,8 +415,6 @@ page_fault_handler(struct Trapframe *tf)
 
 	// Handle kernel-mode page faults.
 
-	// LAB 3: Your code here.
-	
 	if ((tf->tf_cs & 3) == 0) {
 		cprintf("page_fault_handler: kernel fault va %08x ip %08x.\n", fault_va, tf->tf_eip);
 		panic("page_fault_handler: page fault in kernel mode.\n");
@@ -466,24 +463,26 @@ page_fault_handler(struct Trapframe *tf)
 	    cprintf("page_fault_handler: [%08x] user fault va %08x ip %08x.\n", curenv->env_id, fault_va, tf->tf_eip);
 	    print_trapframe(tf);
 	    env_destroy(curenv);
+	    return;
     }
 
     //user exception stack
     user_mem_assert(curenv, (void *)(UXSTACKTOP - 4), 4, PTE_P | PTE_W | PTE_U); 
+    //page fault handler
     user_mem_assert(curenv, (void *)(curenv->env_pgfault_upcall), 4, PTE_P | PTE_U);
 
     utf.utf_fault_va = fault_va;
-	utf.utf_err = tf->tf_err;
-	utf.utf_regs = tf->tf_regs;
-	utf.utf_eip = tf->tf_eip;
-	utf.utf_eflags = tf->tf_eflags;
-	utf.utf_esp = tf->tf_esp;
+	utf.utf_err      = tf->tf_err;
+	utf.utf_regs     = tf->tf_regs;
+	utf.utf_eip      = tf->tf_eip;
+	utf.utf_eflags   = tf->tf_eflags;
+	utf.utf_esp      = tf->tf_esp;
 
 	if((tf->tf_esp >= (UXSTACKTOP - PGSIZE)) && (tf->tf_esp < UXSTACKTOP)) {
 	    tf->tf_esp -= 4;
 	} else {
 	    tf->tf_esp = UXSTACKTOP - sizeof(struct UTrapframe);	    
-	    if(tf->tf_esp < UXSTACKTOP - PGSIZE) {
+	    if(tf->tf_esp < (UXSTACKTOP - PGSIZE)) {
 	        cprintf("page_fault_handler: user exception stack overflow.\n");
 	        cprintf("page_fault_handler: [%08x] user fault va %08x ip %08x.\n", curenv->env_id, fault_va, tf->tf_eip);
 	        print_trapframe(tf);
