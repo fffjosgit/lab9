@@ -411,7 +411,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
     
     //if(((unsignd int) e->env_ipc_dstva) < UTOP && ((unsigned int) srcva < UTOP))
     //&& target->env_ipc_dstva
-    if(srcva && target->env_ipc_dstva) {
+    /*if(srcva && target->env_ipc_dstva) {
         if(((unsigned int)srcva >= UTOP) || ((unsigned int)srcva % PGSIZE)) {
 			return -E_INVAL;
 		}
@@ -432,7 +432,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 		}
 		target->env_ipc_perm = perm;
     }
-    
+    */
 	target->env_ipc_recving = 0;
 	//e->env_ipc_dstva = (void *) USTACKTOP;
 	target->env_ipc_from = curenv->env_id;
@@ -460,9 +460,9 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	//if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE))
-	if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE)) {
+	/*if(((unsigned int)dstva < UTOP) || ((unsigned int)dstva % PGSIZE)) {
 	    return -E_INVAL;
-	}
+	} */
 
 	curenv->env_ipc_dstva = dstva;
 	curenv->env_ipc_recving = 1;
