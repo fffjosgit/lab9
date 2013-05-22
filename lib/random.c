@@ -31,6 +31,7 @@
 
 #include <inc/types.h>
 #include <inc/lib.h>
+#include <inc/random.h>
 
 static u_long next = 1;
 
