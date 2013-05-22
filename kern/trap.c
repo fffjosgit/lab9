@@ -480,6 +480,7 @@ page_fault_handler(struct Trapframe *tf)
 
 	if((tf->tf_esp >= (UXSTACKTOP - PGSIZE)) && (tf->tf_esp < UXSTACKTOP)) {
 	    tf->tf_esp -= 4;
+	    tf->tf_esp -= sizeof(struct UTrapframe);
 	} else {
 	    tf->tf_esp = UXSTACKTOP - sizeof(struct UTrapframe);	    
 	    if(tf->tf_esp < (UXSTACKTOP - PGSIZE)) {
