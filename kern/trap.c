@@ -479,18 +479,18 @@ page_fault_handler(struct Trapframe *tf)
 	utf.utf_esp      = tf->tf_esp;
 
 	if((tf->tf_esp >= (UXSTACKTOP - PGSIZE)) && (tf->tf_esp < UXSTACKTOP)) {
-	    tf->tf_esp -= 4;
-	    tf->tf_esp -= sizeof(struct UTrapframe);
+	    tf->tf_esp -= sizeof(struct UTrapframe) + 4;
 	} else {
 	    tf->tf_esp = UXSTACKTOP - sizeof(struct UTrapframe);	    
-	    if(tf->tf_esp < (UXSTACKTOP - PGSIZE)) {
-	        cprintf("page_fault_handler: user exception stack overflow.\n");
-	        cprintf("page_fault_handler: [%08x] user fault va %08x ip %08x.\n", curenv->env_id, fault_va, tf->tf_eip);
-	        print_trapframe(tf);
-	        env_destroy(curenv);
-	        return;
-	    } 
 	}
+
+	if(tf->tf_esp < (UXSTACKTOP - PGSIZE)) {
+	   cprintf("page_fault_handler: user exception stack overflow.\n");
+	   cprintf("page_fault_handler: [%08x] user fault va %08x ip %08x.\n", curenv->env_id, fault_va, tf->tf_eip);
+	   print_trapframe(tf);
+	   env_destroy(curenv);
+	   return;
+	} 
     
     //push utf on stack
     *((struct UTrapframe *) (tf->tf_esp)) = utf;
