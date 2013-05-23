@@ -31,8 +31,10 @@ KERN_SRCFILES :=	kern/entry.S \
 			lib/printfmt.c \
 			lib/readline.c \
 			lib/string.c \
+			lib/random.c \
 			kern/time.c \
 			kern/tmpentry.S
+
 
 # Source files for LAB4
 KERN_SRCFILES +=	kern/mpconfig.c \
