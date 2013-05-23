@@ -9,12 +9,12 @@ void forktree(const char *cur);
 void
 forkchild(const char *cur, char branch)
 {
-	char nxt[DEPTH+1];
+	char nxt[DEPTH + 1];
 
 	if (strlen(cur) >= DEPTH)
 		return;
 
-	snprintf(nxt, DEPTH+1, "%s%c", cur, branch);
+	snprintf(nxt, DEPTH + 1, "%s%c", cur, branch);
 	if (fork() == 0) {
 		forktree(nxt);
 		exit();
@@ -24,6 +24,7 @@ forkchild(const char *cur, char branch)
 void
 forktree(const char *cur)
 {
+	sys_set_priority(strlen(cur) % 5);
 	cprintf("%08x: I am '%s'\n", sys_getenvid(), cur);
 
 	forkchild(cur, '0');
