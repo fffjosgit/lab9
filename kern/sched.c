@@ -76,10 +76,10 @@ int get_rand(int status)
 	    if(envs[i].env_status == status) {
 	        if(envs[i].env_priority == maxprio) {
 	            cprintf("n: %d \n", n);
-	            n--;
 	            if(!n) {
 	                return i;
 	            } 
+	            n--;	            
 	        }    
 	    }    
 	}
