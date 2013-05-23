@@ -4,6 +4,8 @@
 #include <kern/env.h>
 #include <kern/pmap.h>
 #include <kern/monitor.h>
+#include <kern/time.h>
+#include <kern/random.h>
 
 void sched_halt(void);
 
@@ -44,6 +46,40 @@ int get_highest_env(int x, int status)
 	return ret;
 }
 
+int get_rand(int status);
+int get_rand(int status)
+{
+    srand(time_msec());
+
+    int i, j; 
+	int n = 0, maxprio = -1;
+
+	for(i = 0; i < NENV; i++) {
+	    if(envs[i].env_status == status) {
+	        if(envs[i].env_priority > maxprio) {
+	            n = 1;
+	            maxprio = envs[i].env_priority; 
+	        } else if(envs[i].env_priority == maxprio) {
+	            n++;
+	        }    
+	    }    
+	}
+
+	n = rand() % n;
+	
+	for(i = 0; i < NENV; i++) {
+	    if(envs[i].env_status == status) {
+	        if(envs[i].env_priority == maxprio) {
+	            n--;
+	            if(!n) {
+	                return i;
+	            } 
+	        }    
+	    }    
+	}
+	return -1;
+
+}
 
 // Choose a user environment to run and run it.
 //shed with priority
@@ -86,23 +122,28 @@ sched_yield(void)
 	    env_run(&envs[next_envid]);    
 	}*/
 	
-	for (i = 0; i < NENV; i++) {
+	/*for (i = 0; i < NENV; i++) {
 		next_envid = (first_eid + i) % NENV;
 		if (envs[next_envid].env_status == ENV_RUNNABLE) {
 			cprintf("envrun RUNNABLE: %d\n", next_envid);
 			env_run(&envs[next_envid]);
 			break;
 		}
+	}*/
+    
+    if((next_envid = get_rand(ENV_RUNNABLE)) >= 0) {
+	    cprintf("envrun RUNNABLE: %08x with priority: %d\n", next_envid, envs[next_envid].env_priority);
+	    env_run(&envs[next_envid]);    
 	}
-    /*
-	for (i = 0; i < NENV; i++) {
+
+    for (i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
         if ((envs[next_envid].env_status == ENV_RUNNING) && (envs[next_envid].env_cpunum == thiscpu->cpu_id)) {
             cprintf("envrun RUNNING: %d\n", next_envid);
             env_run(&envs[next_envid]);
             break;
         }
-    }*/   
+    }
 
 	// sched_halt never returns
 	sched_halt();

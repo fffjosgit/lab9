@@ -304,6 +304,7 @@ trap_dispatch(struct Trapframe *tf)
     case T_SIMDERR:         // SIMD floating point error
         break;
 	case IRQ_OFFSET + IRQ_RTC:
+	    time_tick();
 	    sched_yield();
 	    return;
 	case IRQ_OFFSET + IRQ_KBD:        //keyboard
