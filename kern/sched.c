@@ -69,8 +69,9 @@ int get_rand(int status)
 	    return -1;
 	}
 
-	n = rand() % n;
 	cprintf("n: %d \n", n);
+	n = rand() % n;
+	cprintf("rand n: %d \n", n);
 	
 	for(i = 0; i < NENV; i++) {
 	    if(envs[i].env_status == status) {
