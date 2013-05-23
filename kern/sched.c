@@ -69,19 +69,16 @@ int get_rand(int status)
 	    return -1;
 	}
 
-	cprintf("n: %d \n", n);
+	//cprintf("n: %d \n", n);
 	n = rand() % n;
-	cprintf("rand n: %d \n", n);
+	//cprintf("rand n: %d \n", n);
 	
 	for(i = 0; i < NENV; i++) {
-	    if(envs[i].env_status == status) {
-	        if(envs[i].env_priority == maxprio) {
-	            cprintf("n: %d \n", n);
-	            if(!n) {
-	                return i;
-	            } 
-	            n--;	            
-	        }    
+	    if((envs[i].env_status == status) && (envs[i].env_priority == maxprio))  {
+	        if(!n) {
+	            return i;
+	        } 
+	        n--;	               
 	    }    
 	}
 	return -1;
