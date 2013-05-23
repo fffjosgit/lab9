@@ -128,6 +128,24 @@ duppage(envid_t envid, unsigned pn)
 //   Neither user exception stack should ever be marked copy-on-write,
 //   so you must allocate a new page for the child's user exception stack.
 //
+/*
+ * The page directory entry corresponding to the virtual address range
+ * [UVPT, UVPT + PTSIZE) points to the page directory itself.  Thus, the page
+ * directory is treated as a page table as well as a page directory.
+ *
+ * One result of treating the page directory as a page table is that all PTEs
+ * can be accessed through a "virtual page table" at virtual address UVPT (to
+ * which uvpt is set in entry.S).  The PTE for page number N is stored in
+ * uvpt[N].  (It's worth drawing a diagram of this!)
+ *
+ * A second consequence is that the contents of the current page directory
+ * will always be available at virtual address (UVPT + (UVPT >> PGSHIFT)), to
+ * which uvpd is set in entry.S.
+ */
+//extern volatile pte_t uvpt[];     // VA of "virtual page table"
+//extern volatile pde_t uvpd[];     // VA of current page directory
+
+
 envid_t
 fork(void)
 {
@@ -147,17 +165,34 @@ fork(void)
 	    return 0;
 	}
 
-	pn = UTOP / PGSIZE - 1;
-	//? what is this????
+	
+	//#define NPDENTRIES	1024		// page directory entries per page directory
+    //#define NPTENTRIES	1024		// page table entries per page table
+
+	
+	pn = (UTOP / PGSIZE) - 1;
 	while (--pn >= 0) {
-		if (!(uvpd[pn >> 10] & PTE_P)) { 
+		if (!(uvpd[pn >> 10] & PTE_P)) { //pn *= NPTENTRIES (= 10) 
 			pn = (pn >> 10) << 10;
 	    } else if (uvpt[pn] & PTE_P) {
 			duppage(envid, pn);
 		}
     }
 
-	if ((ret = sys_page_alloc(envid, (void *)(UXSTACKTOP - PGSIZE), PTE_W |PTE_U |PTE_P)) < 0) {
+    /*
+    int i;
+    for (i = 0; i < PDX(UTOP); i++) {
+        if(uvpd[i] & PTE_P) {
+            for(pn = 0; pn < NPTENTRIES; pn++) {
+                if(uvpt[(i >> 10) + pn] & PTE_P) {
+                    duppage(envid, pn);
+                }
+            }
+         }
+    }
+    */
+                                                                               
+	if ((ret = sys_page_alloc(envid, (void *)(UXSTACKTOP - PGSIZE), PTE_W | PTE_U | PTE_P)) < 0) {
 		//panic("sys_page_alloc error: %e", r);
 		panic("fork: sys_page_alloc error");
     }
