@@ -66,10 +66,12 @@ int get_rand(int status)
 	}
 
 	n = rand() % n;
+	cprintf("n: %d", n);
 	
 	for(i = 0; i < NENV; i++) {
 	    if(envs[i].env_status == status) {
 	        if(envs[i].env_priority == maxprio) {
+	            cprintf("n: %d", n);
 	            n--;
 	            if(!n) {
 	                return i;
@@ -122,19 +124,19 @@ sched_yield(void)
 	    env_run(&envs[next_envid]);    
 	}*/
 	
-	for (i = 0; i < NENV; i++) {
+	/*for (i = 0; i < NENV; i++) {
 		next_envid = (first_eid + i) % NENV;
 		if (envs[next_envid].env_status == ENV_RUNNABLE) {
 			cprintf("envrun RUNNABLE: %d\n", next_envid);
 			env_run(&envs[next_envid]);
 			break;
 		}
-	}
+	}*/
     
-    /*if((next_envid = get_rand(ENV_RUNNABLE)) >= 0) {
+    if((next_envid = get_rand(ENV_RUNNABLE)) >= 0) {
 	    cprintf("envrun RUNNABLE: %08x with priority: %d\n", next_envid, envs[next_envid].env_priority);
 	    env_run(&envs[next_envid]);    
-	}*/
+	}
 
     for (i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
