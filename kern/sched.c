@@ -66,7 +66,7 @@ int get_rand(int status)
 	}
 
 	if(!n) {
-	    return;
+	    return -1;
 	}
 
 	n = rand() % n;
