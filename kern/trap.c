@@ -12,6 +12,7 @@
 #include <kern/kclock.h>
 #include <kern/picirq.h>
 #include <kern/cpu.h>
+#include <kern/time.h>
 #include <kern/spinlock.h>
 #include <kern/picirq.h>
 
