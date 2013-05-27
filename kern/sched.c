@@ -63,7 +63,7 @@ sched_yield(void)
 
 	for(i = 0; i < NENV; i++) {
 	    if(((env = envs[i]).env_priority == ENV_PRIORITY_HIGH) 
-	    && (env.env_status == ENV_RUNNABLE) || (env.env_status == ENV_RUNNING) ) {
+	    && ((env.env_status == ENV_RUNNABLE) || (env.env_status == ENV_RUNNING)) ) {
 	        if((env.env_cc > 0) && (env.env_cc <= min_cc)) {
 	            next_envid = i;
 	        }                                               
