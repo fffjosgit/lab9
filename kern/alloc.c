@@ -2,7 +2,6 @@
 #include <kern/alloc.h>
 #include <inc/assert.h>
 #include <kern/spinlock.h>
-    safsdafasdf
 
 #define SPACE_SIZE 5*0x1000
 

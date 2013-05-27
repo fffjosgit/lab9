@@ -54,10 +54,10 @@ sched_yield(void)
 	    }
 	}
 	
-	min_cc = env.env_cc;
+	min_cc = 100000;//env.env_cc;
 	next_envid = -1;
 
-	if(curenv && (curenv->env_priority == ENV_PRIORITY_HIGH)) {
+	if(curenv && (curenv->env_priority == ENV_PRIORITY_HIGH) && (curenv->env_status == ENV_RUNNING)) {
 	    curenv->env_cc--;        
 	}
 
@@ -73,6 +73,15 @@ sched_yield(void)
 	    cprintf("envrun RUNNING real-time: %d [%08x]\n", next_envid, envs[next_envid].env_id);
 	    env_run(&envs[next_envid]);    
 	}
+
+	for(i = 0; i < NENV; i++) {
+        next_envid = (first_eid + i) % NENV;
+        if (envs[next_envid].env_status == ENV_RUNNABLE) {
+            cprintf("envrun RUNNABLE: %d [%08x]\n", next_envid, envs[next_envid].env_id);
+            env_run(&envs[next_envid]);
+            break;
+        }
+    }
     
     for(i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
