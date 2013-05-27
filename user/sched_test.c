@@ -5,7 +5,6 @@
 void
 umain(int argc, char **argv)
 {
-	int i;
 
 	sys_make_me_real(10, 10, 10);
 
