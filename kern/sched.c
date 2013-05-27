@@ -35,6 +35,9 @@ sched_yield(void)
 	int min_cc;
 
     for(i = 0; i < NENV; ++i) {
+        if(envs[i].pause > 0) {
+            envs[i].status = ENV_BLOCKING;    
+        }
         if((env = &envs[i])->env_status == ENV_BLOCKING) {
             cprintf("[%08x]: sleep: %d. \n", env->env_id, env->env_pause);
             if(--env->env_pause <= 0) {
