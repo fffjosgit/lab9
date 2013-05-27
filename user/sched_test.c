@@ -18,7 +18,10 @@ umain(int argc, char **argv)
 
 	for(i = 0; i < 1000; i++) {
 	    for(j = 0; j < 1000; j++) {
-	            
+	        z[i][j] = 0;
+	        for(k = 0; k < 1000; k++) {
+	            z[i][j] += x[i][k] * y[k][j];
+	        }	            
 	    }
 	}
 
