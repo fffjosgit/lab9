@@ -122,6 +122,7 @@ env_init(void)
 
 	int i;
     for(i = 0; i < NENV; i++) {
+
         memset(&envs[i], 0, sizeof(envs[i]));
         
         envs[i].env_type = ENV_TYPE_USER;
@@ -555,6 +556,7 @@ env_free(struct Env *e)
 	page_decref(pa2page(pa));
 
 	// return the environment to the free list
+	memset(e, 0, sizeof(*e));
 	e->env_status = ENV_FREE;
 	e->env_link = env_free_list;
 	env_free_list = e;
