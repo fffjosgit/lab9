@@ -63,9 +63,11 @@ sched_yield(void)
 	min_cc = 100000;//env.env_cc;
 	next_envid = -1;
 
-	/*if(curenv && (curenv->env_priority == ENV_PRIORITY_HIGH) && (curenv->env_status == ENV_RUNNING)) {
-	    if(curenv->env_cc--)         
-	}*/
+	if(curenv && (curenv->env_priority == ENV_PRIORITY_HIGH) && (curenv->env_status == ENV_RUNNING)) {
+	    if(curenv->env_cc >= 0) {
+	        curenv->env_cc--;
+	    }         
+	}
 
 	for(i = 0; i < NENV; i++) {
 	    if(((env = &envs[i])->env_priority == ENV_PRIORITY_HIGH) 
