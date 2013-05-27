@@ -13,7 +13,7 @@ umain(int argc, char **argv)
 	int x[1000][1000];
 	int y[1000][1000];
 	int z[1000][1000];
-	int i, j;
+	int i, j, k;
 	int tmp;
 
 	for(i = 0; i < 1000; i++) {
