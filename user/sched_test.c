@@ -37,6 +37,8 @@ umain(int argc, char **argv)
 	        }
 	    }
 
+	    cprintf("X \n");
+
 	    sys_sleep(5);
 
      	sys_work_done();
