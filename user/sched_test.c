@@ -14,29 +14,33 @@ umain(int argc, char **argv)
 	int x[1000][1000];
 	int y[1000][1000];
 	int z[1000][1000];
-	int i, j, k;
+	int i, j, k, l;
 	int tmp;
 
-	srand(1);
-	for(i = 0; i < 1000; i++) {
-	    for(j = 0; j < 1000; j++) {
-	        x[i][j] = rand();
-	        y[i][j] = rand();	        
+	
+	for(l = 0; l < 10; l++) {
+	
+    	srand(1);
+	    for(i = 0; i < 1000; i++) {
+	        for(j = 0; j < 1000; j++) {
+	            x[i][j] = rand();
+	            y[i][j] = rand();	        
+	        }
 	    }
-	}
 
-	for(i = 0; i < 1000; i++) {
-	    for(j = 0; j < 1000; j++) {
-	        z[i][j] = 0;
-	        for(k = 0; k < 1000; k++) {
-	            z[i][j] += x[i][k] * y[k][j];
-	        }	            
+	    for(i = 0; i < 1000; i++) {
+	        for(j = 0; j < 1000; j++) {
+	            z[i][j] = 0;
+	            for(k = 0; k < 1000; k++) {
+	                z[i][j] += x[i][k] * y[k][j];
+	            }	            
+	        }
 	    }
-	}
 
-	sys_sleep(5);
+	    sys_sleep(5);
 
-	//sys_work_done();
+     	sys_work_done();
+    }
 
 	cprintf("All done in environment %08x.\n", thisenv->env_id);
 }
