@@ -67,7 +67,7 @@ i386_init(void)
 	//ENV_CREATE(prog_sc_test9, ENV_TYPE_KERNEL, 9);
 	//ENV_CREATE(prog_sc_test10, ENV_TYPE_KERNEL, 10);
 
-	NEW_ENV_CREATE(user_idle, ENV_TYPE_USER);
+	//NEW_ENV_CREATE(user_idle, ENV_TYPE_USER);
 	NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
 #endif // TEST*
 
