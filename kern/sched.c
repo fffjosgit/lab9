@@ -60,7 +60,7 @@ sched_yield(void)
 	                env->env_cc = env->env_c;    
 	            }
 	        }
-	        envs->env_cp--;	        	            
+	        env->env_cp--;	        	            
 	    }
 	}
 	
