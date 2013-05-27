@@ -9,7 +9,7 @@ umain(int argc, char **argv)
 
 	cprintf("Hello, I am environment %08x.\n", thisenv->env_id);
 	
-	make_me_real(100, 100, 100);
+	sys_make_me_real(100, 100, 100);
 	
 	for(;;) {
 	}
