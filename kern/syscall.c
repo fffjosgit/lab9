@@ -58,6 +58,7 @@ sys_sleep(int pause)
         curenv->env_pause = pause;
         curenv->env_status = ENV_BLOCKING; 
     }
+    sched_yield();
 }
 
 // Print a string to the system console.
