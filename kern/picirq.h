@@ -13,10 +13,10 @@
 #define IO_PIC2		0xA0	// Slave (IRQs 8-15)
 
 #define IO_PIC1_CMND	IO_PIC1	
-#define IO_PIC1_DATA	IO_PIC1+1
+#define IO_PIC1_DATA	IO_PIC1 + 1
 
 #define IO_PIC2_CMND	IO_PIC2
-#define IO_PIC2_DATA	IO_PIC2+1
+#define IO_PIC2_DATA	IO_PIC2 + 1
 
 #define IRQ_SLAVE	2	// IRQ at which slave connects to master
 
