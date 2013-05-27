@@ -24,7 +24,7 @@ forkchild(const char *cur, char branch)
 void
 forktree(const char *cur)
 {
-	sys_set_priority(strlen(cur) % 5);
+	//sys_set_priority(strlen(cur) % 5);
 	cprintf("%08x: I am '%s'\n", sys_getenvid(), cur);
 
 	forkchild(cur, '0');
