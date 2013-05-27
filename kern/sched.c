@@ -43,11 +43,11 @@ sched_yield(void)
 	            env.env_c, env.env_p, env.env_cp, env.env_cc);
 
 	        if(env.env_cp <= 0) {
-	            env.env_cp = env_p;
+	            env.env_cp = env.env_p;
 	            if(env.env_cc > 0) {
 	                panic("Sched: i'm a real!");	                
 	            } else {
-	                env.env_cc = env_c;    
+	                env.env_cc = env.env_c;    
 	            }
 	        }
 	        env.env_cp--;	        	            
