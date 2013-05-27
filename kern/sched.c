@@ -39,7 +39,7 @@ sched_yield(void)
 	for(i = 0; i < NENV; i++) {
 	    if((env = envs[i]).env_priority == ENV_PRIORITY_HIGH) {
 	        
-	        cprintf("[%08x]: %d %d %d %d \n", env.env_id, 
+	        cprintf("[%08x]: %d %d %d %d. \n", env.env_id, 
 	            env.env_c, env.env_p, env.env_cp, env.env_cc);
 
 	        if(env.env_cp <= 0) {
