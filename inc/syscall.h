@@ -17,6 +17,8 @@ enum {
 	SYS_ipc_try_send,
 	SYS_ipc_recv,
 	SYS_set_priority,
+	SYS_done, 
+	SYS_make_real,
 	NSYSCALLS
 };
 

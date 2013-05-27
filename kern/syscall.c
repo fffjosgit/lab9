@@ -26,6 +26,30 @@ sys_set_priority(int priority)
 	return old_priority; 
 }
 
+//make it real (make it easy)
+static int 
+sys_make_me_real(int p, int c, int d) 
+{
+	int old_priority = curenv->env_priority;
+	curenv->env_priority = ENV_PRIORITY_HIGH;
+	
+	curenv->env_p = (p > 0) ? p : 0;
+	curenv->env_c = (c > 0) ? c : 0;
+	curenv->env_d = (d > 0) ? d : 0;
+
+	curenv->env_cp = curenv->env_p;
+	curenv->env_cc = curenv->env_c;		
+
+	return old_priority; 
+}
+
+// no comments
+static void 
+sys_work_done() 
+{
+	curenv->env_cc = -1;
+}
+
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -486,6 +510,14 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	//DX, CX, BX, DI, SI - function op
 	int ret = 0;
 	switch(syscallno) {
+	case SYS_done:
+	    //static void sys_work_done();
+	    sys_work_done();
+	    break;
+	case SYS_make_real:
+	    //static int sys_make_me_real(int priority, int p, int c);
+	    ret = sys_make_me_real((int)a1, (int)a2, (int)a3);
+	    break;
 	case SYS_set_priority:
 	    //static void sys_set_priority(int priority);
 	    ret = sys_set_priority((int)a1);

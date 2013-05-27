@@ -1,7 +1,7 @@
 #include <kern/time.h>
 #include <inc/assert.h>
 
-static unsigned int ticks;
+static unsigned long long ticks;
 
 #define PERIOD 10
 

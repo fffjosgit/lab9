@@ -73,6 +73,11 @@ struct Env {
 	int env_ipc_perm;		// Perm of page mapping received
 
 	int env_priority;       //environment priority for scheduler [ENV_PRIO_NORMAL, ENV_PRIO_HIGH]
+	int env_p; //period
+	int env_c; //cycle
+	int env_d; //deadline
+	int env_cc; //current period
+	int env_cp; //current cycle
 };
 
 #endif // !JOS_INC_ENV_H

@@ -22,130 +22,62 @@ void sched_halt(void);
 	}
 }*/
 
-int get_highest_env(int x, int status) 
-{
-	int i, j; 
-	int maxprio = -1; 
-	int ret = -1;
-		
-	for(j = 0; j < NENV; j++) {
-		if(j == x) {
-			continue;
-		} else {
-		    i = (j + x) % NENV; 
-		}
-		if(envs[i].env_status == status) {
-		    if(envs[i].env_priority == ENV_PRIORITY_HIGH) {
-		        return i;
-		    } else if(envs[i].env_priority > maxprio) {
-		        maxprio = envs[i].env_priority;
-		        ret = i;
-		    } 
-		}
-	}
-	return ret;
-}
-
-int get_rand(int status);
-int get_rand(int status)
-{
-    srand(time_msec());
-
-    int i, j; 
-	int n = 0, maxprio = -1;
-
-	for(i = 0; i < NENV; i++) {
-	    if(envs[i].env_status == status) {
-	        if(envs[i].env_priority > maxprio) {
-	            n = 1;
-	            maxprio = envs[i].env_priority; 
-	        } else if(envs[i].env_priority == maxprio) {
-	            n++;
-	        }    
-	    }    
-	}
-
-	if(!n) {
-	    return -1;
-	}
-
-	//cprintf("n: %d \n", n);
-	n = rand() % n;
-	//cprintf("rand n: %d \n", n);
-	
-	for(i = 0; i < NENV; i++) {
-	    if((envs[i].env_status == status) && (envs[i].env_priority == maxprio))  {
-	        if(!n) {
-	            return i;
-	        } 
-	        n--;	               
-	    }    
-	}
-	return -1;
-
-}
-
-// Choose a user environment to run and run it.
-//shed with priority
-//random, if we have more then one highest priority env
 void
 sched_yield(void)
 {
 	struct Env *idle;
 
-	// Implement simple round-robin scheduling.
-	//
-	// Search through 'envs' for an ENV_RUNNABLE environment in
-	// circular fashion starting just after the env this CPU was
-	// last running.  Switch to the first such environment found.
-	//
-	// If no envs are runnable, but the environment previously
-	// running on this CPU is still ENV_RUNNING, it's okay to
-	// choose that environment.
-	//
-	// Never choose an environment that's currently running on
-	// another CPU (env_status == ENV_RUNNING). If there are
-	// no runnable environments, simply drop through to the code
-	// below to halt the cpu.
-
-	// LAB 2: Your code here.
 	uint32_t envid = thiscpu->cpu_env ? ENVX(thiscpu->cpu_env->env_id) : 0;
 	uint32_t first_eid = (++envid) % NENV;
 	int next_envid;
 	int i;
+	struct Env env;
+	int min_cc;
 
 	//perform_io_simulation();
 
-	/*if((next_envid = get_highest_env(envid, ENV_RUNNABLE)) >= 0) {
-	    cprintf("envrun RUNNABLE: %08x with priority: %d\n", next_envid, envs[next_envid].env_priority);
-	    env_run(&envs[next_envid]);    
-	}*/
+	for(i = 0; i < NENV; i++) {
+	    if((env = envs[i]).env_priority == ENV_PRIORITY_HIGH) {
+	        
+	        cprintf("[%08x]: %d %d %d %d \n", env.env_id, 
+	            env.env_c, env.env_p, env.env_cp, env.env_cc);
 
-	/*if((next_envid = get_highest_env(envid, ENV_RUNNING)) >= 0) {
-	    cprintf("envrun RUNNING: %08x with priority: %d\n", next_envid, envs[next_envid].env_priority);
-	    env_run(&envs[next_envid]);    
-	}*/
+	        if(env.env_cp <= 0) {
+	            env.env_cp = env_p;
+	            if(env.env_cc > 0) {
+	                panic("Sched: i'm a real!");	                
+	            } else {
+	                env.env_cc = env_c;    
+	            }
+	        }
+	        env.env_cp--;	        	            
+	    }
+	}
 	
-	/*for (i = 0; i < NENV; i++) {
-		next_envid = (first_eid + i) % NENV;
-		if (envs[next_envid].env_status == ENV_RUNNABLE) {
-			cprintf("envrun RUNNABLE: %d\n", next_envid);
-			env_run(&envs[next_envid]);
-			break;
-		}
-	}*/
-    
-    if((next_envid = get_rand(ENV_RUNNABLE)) >= 0) {
-	    cprintf("envrun RUNNABLE: %d [%08x] priority: %d\n", next_envid, 
-	        envs[next_envid].env_id, envs[next_envid].env_priority);
-	    env_run(&envs[next_envid]);    
+	min_cc = env.env_cc;
+	next_envid = -1;
+
+	if(curenv->env_priority == ENV_PRIORITY_HIGH) {
+	    curenv->env_cc--;        
 	}
 
+	for(i = 0; i < NENV; i++) {
+	    if((env = envs[i]).env_priority == ENV_PRIORITY_HIGH) {
+	        if((env.env_cc > 0) && (env.env_cc <= min_cc)) {
+	            next_envid = i;
+	        }                                               
+	    }    
+	}
+
+	if(next_envid >= 0) {
+	    cprintf("envrun RUNNING real-time: %d [%08x]\n", next_envid, envs[next_envid].env_id);
+	    env_run(&envs[next_envid]);    
+	}
+    
     for(i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
         if ((envs[next_envid].env_status == ENV_RUNNING) && (envs[next_envid].env_cpunum == thiscpu->cpu_id)) {
-            cprintf("envrun RUNNING: %d [%08x] priority: %d\n", next_envid, 
-                envs[next_envid].env_id, envs[next_envid].env_priority);
+            cprintf("envrun RUNNING: %d [%08x]\n", next_envid, envs[next_envid].env_id);
             env_run(&envs[next_envid]);
             break;
         }

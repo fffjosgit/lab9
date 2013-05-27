@@ -304,7 +304,7 @@ trap_dispatch(struct Trapframe *tf)
         break;
     case T_SIMDERR:         // SIMD floating point error
         break;
-	case IRQ_OFFSET + IRQ_RTC:
+	case IRQ_OFFSET: //IRQ_TIMER
 	    time_tick();
 	    sched_yield();
 	    return;
