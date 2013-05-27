@@ -1,6 +1,7 @@
 // this is my simple scheduler testester
 
 #include <inc/lib.h>
+#include <inc/random.h>
 
 void
 umain(int argc, char **argv)
@@ -16,9 +17,14 @@ umain(int argc, char **argv)
 	int i, j, k;
 	int tmp;
 
-	int t;
-	for(t = 0; t < 1000009; t++)
-	
+	srand(1);
+	for(i = 0; i < 1000; i++) {
+	    for(j = 0; j < 1000; j++) {
+	        x[i][j] = rand();
+	        y[i][j] = rand();	        
+	    }
+	}
+
 	for(i = 0; i < 1000; i++) {
 	    for(j = 0; j < 1000; j++) {
 	        z[i][j] = 0;
