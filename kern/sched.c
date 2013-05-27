@@ -40,7 +40,7 @@ sched_yield(void)
 	    if((env = &envs[i])->env_priority == ENV_PRIORITY_HIGH) {
 	        
 	        cprintf("[%08x]: %d %d %d %d. \n", env->env_id, 
-	            env->env_c, env->env_p, env->env_cp, env->env_cc);
+	            env->env_c, env->env_p, env->env_cc, env->env_cp);
 
 	        if(env->env_cp <= 0) {
 	            env->env_cp = env->env_p;
@@ -57,9 +57,9 @@ sched_yield(void)
 	min_cc = 100000;//env.env_cc;
 	next_envid = -1;
 
-	if(curenv && (curenv->env_priority == ENV_PRIORITY_HIGH) && (curenv->env_status == ENV_RUNNING)) {
-	    curenv->env_cc--;        
-	}
+	/*if(curenv && (curenv->env_priority == ENV_PRIORITY_HIGH) && (curenv->env_status == ENV_RUNNING)) {
+	    if(curenv->env_cc--)         
+	}*/
 
 	for(i = 0; i < NENV; i++) {
 	    if(((env = &envs[i])->env_priority == ENV_PRIORITY_HIGH) 
@@ -71,7 +71,7 @@ sched_yield(void)
 	}
 
 	if(next_envid >= 0) {
-	    cprintf("envrun real-time: %d [%08x]\n", next_envid, envs[next_envid].env_id);
+	    cprintf("envrun Real-time: %d [%08x]\n", next_envid, envs[next_envid].env_id);
 	    env_run(&envs[next_envid]);    
 	}
 
