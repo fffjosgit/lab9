@@ -36,6 +36,7 @@ sched_yield(void)
 
     for(i = 0; i < NENV; ++i) {
         if((env = &envs[i])->env_status == ENV_BLOCKING) {
+            cprintf("[%08x]: sleep: %d. \n", env->env_id, env->env_pause);
             if(--env->env_pause <= 0) {
                 env->env_status = ENV_RUNNABLE;    
             }     
