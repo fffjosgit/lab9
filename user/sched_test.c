@@ -16,6 +16,9 @@ umain(int argc, char **argv)
 	int i, j, k;
 	int tmp;
 
+	int t;
+	for(t = 0; t < 1000000; t++)
+	
 	for(i = 0; i < 1000; i++) {
 	    for(j = 0; j < 1000; j++) {
 	        z[i][j] = 0;
