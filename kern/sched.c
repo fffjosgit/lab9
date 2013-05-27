@@ -36,7 +36,7 @@ sched_yield(void)
 
     for(i = 0; i < NENV; ++i) {
         if((env = &envs[i])->env_status == ENV_BLOCKING) {
-            if(--envs[i].pause <= 0) {
+            if(--env->env_pause <= 0) {
                 env->env_status = ENV_RUNNABLE;    
             }     
         }
