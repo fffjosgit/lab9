@@ -41,13 +41,13 @@ syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 int
 sys_make_me_real(int p, int c, int d)
 {
-    return syscall(SYS_set_priority, 0, p, c, d, 0, 0);
+    return syscall(SYS_make_real, 0, p, c, d, 0, 0);
 }
 
 void
 sys_work_done()
 {
-    syscall(SYS_set_priority, 0, 0, 0, 0, 0, 0);
+    syscall(SYS_done, 0, 0, 0, 0, 0, 0);
 }
 
 int 
