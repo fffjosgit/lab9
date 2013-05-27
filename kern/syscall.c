@@ -50,6 +50,16 @@ sys_work_done()
 	curenv->env_cc = -1;
 }
 
+//sleep env
+static void 
+sys_sleep(int pause)
+{
+    if(pause >= 0) {
+        curenv->env_pause = pause;
+        curenv->env_status = ENV_BLOCKING; 
+    }
+}
+
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -111,7 +121,7 @@ sys_yield(void)
 }
 
 // Allocate a new environment.
-// Returns envid of new environment, or < 0 on error.  Errors are:
+// Returns envid of* new environment, or < 0 on error.  Errors are:
 //	-E_NO_FREE_ENV if no free environment is available.
 //	-E_NO_MEM on memory exhaustion.
 static envid_t
@@ -510,6 +520,10 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	//DX, CX, BX, DI, SI - function op
 	int ret = 0;
 	switch(syscallno) {
+	case SYS_sleep:
+	    //static void sys_sleep(int pause);
+	    sys_sleep((int)a1);
+	    break;	    
 	case SYS_done:
 	    //static void sys_work_done();
 	    sys_work_done();

@@ -50,6 +50,12 @@ sys_work_done()
     syscall(SYS_done, 0, 0, 0, 0, 0, 0);
 }
 
+void
+sys_sleep(int pause)
+{
+    syscall(SYS_sleep, 0, pause, 0, 0, 0, 0);
+}
+
 int 
 sys_set_priority(int priority) 
 {

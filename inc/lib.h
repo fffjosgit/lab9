@@ -57,6 +57,7 @@ int	sys_ipc_recv(void *rcv_pg);
 
 int sys_make_me_real(int p, int c, int d);
 void sys_work_done();
+void sys_sleep(int pause);
 
 // This must be inlined.  Exercise for reader: why?
 static __inline envid_t __attribute__((always_inline))
