@@ -305,6 +305,7 @@ trap_dispatch(struct Trapframe *tf)
     case T_SIMDERR:         // SIMD floating point error
         break;
 	case IRQ_OFFSET:
+	    //pic_send_eoi(tp->tf_trapno);
 	    time_tick();
 	    sched_yield();
 	    return;
