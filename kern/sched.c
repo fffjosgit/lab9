@@ -45,7 +45,7 @@ sched_yield(void)
 	        if(env->env_cp <= 0) {
 	            env->env_cp = env->env_p;
 	            if(env->env_cc > 0) {
-	                panic("Sched: i'm a real!");	                
+	                panic("sched_yield: REAL_TIME!");	                
 	            } else {
 	                env->env_cc = env->env_c;    
 	            }
