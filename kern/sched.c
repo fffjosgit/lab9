@@ -70,7 +70,7 @@ sched_yield(void)
 	}
 
 	if(next_envid >= 0) {
-	    cprintf("envrun RUNNING real-time: %d [%08x]\n", next_envid, envs[next_envid].env_id);
+	    cprintf("envrun real-time: %d [%08x]\n", next_envid, envs[next_envid].env_id);
 	    env_run(&envs[next_envid]);    
 	}
 
