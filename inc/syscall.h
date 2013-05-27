@@ -19,6 +19,7 @@ enum {
 	SYS_set_priority,
 	SYS_done, 
 	SYS_make_real,
+	SYS_sleep,
 	NSYSCALLS
 };
 
