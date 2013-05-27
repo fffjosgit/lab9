@@ -38,7 +38,8 @@ sys_make_me_real(int p, int c, int d)
 	curenv->env_d = (d > 0) ? d : 0;
 
 	curenv->env_cp = curenv->env_p;
-	curenv->env_cc = curenv->env_c;		
+	curenv->env_cc = curenv->env_c;
+	cprintf("XXX!");		
 
 	return old_priority; 
 }
