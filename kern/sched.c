@@ -50,7 +50,7 @@ sched_yield(void)
 	                env.env_cc = env.env_c;    
 	            }
 	        }
-	        env.env_cp--;	        	            
+	        envs[i].env_cp--;	        	            
 	    }
 	}
 	
