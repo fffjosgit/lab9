@@ -7,7 +7,7 @@ void
 umain(int argc, char **argv)
 {
 
-	sys_make_me_real(10, 10, 10);
+	sys_make_me_real(15, 15, 15);
 
 	cprintf("Hello, I am real-time environment %08x.\n", thisenv->env_id);
 	
@@ -34,7 +34,7 @@ umain(int argc, char **argv)
 	    }
 	}
 
-	sys_sleep(1000);
+	sys_sleep(5);
 
 	//sys_work_done();
 
