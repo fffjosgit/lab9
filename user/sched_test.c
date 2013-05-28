@@ -20,6 +20,8 @@ umain(int argc, char **argv)
 	
 	for(l = 0; l < 10; l++) {
 	
+    	cprintf("A: [%08x].\n", thisenv->env_id);
+    	
     	srand(1);
 	    for(i = 0; i < 1000; i++) {
 	        for(j = 0; j < 1000; j++) {
@@ -40,7 +42,7 @@ umain(int argc, char **argv)
 	    //
 
 	    sys_work_done();
-	    cprintf("done: [%08x].\n", thisenv->env_id);
+	    cprintf("B: [%08x].\n", thisenv->env_id);
 	    
 	    //sys_sleep(20);    	
     }
