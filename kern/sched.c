@@ -64,9 +64,7 @@ sched_yield(void)
 	                env->env_cc = env->env_c;
 	                env->env_status = ENV_RUNNABLE;    
 	            }
-	        } else if(env->env_cc < 0) {
-	            env->env_status = ENV_NOT_RUNNABLE;
-	        }
+	        } 
 	        env->env_cp--;	        	            
 	    }
 	}
@@ -74,7 +72,8 @@ sched_yield(void)
 	min_cc = 100000;//env.env_cc;
 	next_envid = -1;
 
-	if(curenv && (curenv->env_priority == ENV_PRIORITY_HIGH) && (curenv->env_status == ENV_RUNNING)) {
+	if(curenv && (curenv->env_priority == ENV_PRIORITY_HIGH) 
+	    && (curenv->env_status == ENV_RUNNING)) {
 	    if(curenv->env_cc >= 0) {
 	        curenv->env_cc--;
 	    }         

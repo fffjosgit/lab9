@@ -48,6 +48,7 @@ static void
 sys_work_done() 
 {
 	curenv->env_cc = -1;
+	curenv->env_status = ENV_NOT_RUNNABLE;
 }
 
 //sleep env
