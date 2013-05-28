@@ -61,8 +61,11 @@ sched_yield(void)
 	            if(env->env_cc > 0) {
 	                panic("sched_yield: REAL_TIME!");	                
 	            } else {
-	                env->env_cc = env->env_c;    
+	                env->env_cc = env->env_c;
+	                env->env_status = ENV_RUNNABLE;    
 	            }
+	        } else if(env->env_cc < 0) {
+	            env->env_status = ENV_BLOCKING;
 	        }
 	        env->env_cp--;	        	            
 	    }
