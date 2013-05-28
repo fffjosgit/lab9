@@ -38,7 +38,7 @@ sched_yield(void)
 	struct Env *env;
 	int min_cc;
 
-    for(i = 0; i < NENV; ++i) {
+    /*for(i = 0; i < NENV; ++i) {
         if(envs[i].env_pause > 0) {
             envs[i].env_status = ENV_BLOCKING;    
         } 
@@ -48,7 +48,7 @@ sched_yield(void)
                 env->env_status = ENV_RUNNABLE;    
             }     
         }
-    }
+    } */
 
 	for(i = 0; i < NENV; i++) {
 	    if((env = &envs[i])->env_priority == ENV_PRIORITY_HIGH) {
