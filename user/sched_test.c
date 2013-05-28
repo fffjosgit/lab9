@@ -7,7 +7,7 @@ void
 umain(int argc, char **argv)
 {
 
-	sys_make_me_real(400, 200, 400);
+	sys_make_me_real(600, 400, 600);
 
 	cprintf("Hello, I am real-time environment [%08x].\n", thisenv->env_id);
 	
@@ -22,7 +22,7 @@ umain(int argc, char **argv)
 
 	    //sys_sleep(5);
 	
-    	cprintf("A: [%08x].\n", thisenv->env_id);
+    	cprintf("[%08x]: A \n", thisenv->env_id);
     	
     	srand(1);
 	    for(i = 0; i < 1000; i++) {
@@ -43,7 +43,7 @@ umain(int argc, char **argv)
 
 	    //
 
-	    cprintf("B: [%08x].\n", thisenv->env_id);
+	    cprintf("[%08x]: B \n", thisenv->env_id);
 	    sys_work_done();	    
 	    
 	    //sys_sleep(20);    	
