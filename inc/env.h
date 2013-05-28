@@ -77,7 +77,8 @@ struct Env {
 	int env_c; //cycle
 	int env_d; //deadline
 	int env_cc; //current period
-	int env_cp; //current cycle 
+	int env_cp; //current cycle
+	int env_rt_nt; //real-time env needs time 
 
 	int env_pause; //for pause
 };

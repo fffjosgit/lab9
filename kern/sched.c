@@ -62,7 +62,7 @@ sched_yield(void)
 	                panic("sched_yield: REAL_TIME!");	                
 	            } else {
 	                env->env_cc = env->env_c;
-	                env->env_status = ENV_RUNNABLE;    
+	                env->env_rt_nt = 1;    
 	            }
 	        } 
 	        env->env_cp--;	        	            
@@ -81,8 +81,9 @@ sched_yield(void)
 
 	for(i = 0; i < NENV; i++) {
 	    if(((env = &envs[i])->env_priority == ENV_PRIORITY_HIGH) 
-	    && ((env->env_status == ENV_RUNNABLE) || (env->env_status == ENV_RUNNING)) ) {
-	        if((env->env_cc >= 0) && (env->env_cc <= min_cc)) {
+	    && ((env->env_status == ENV_RUNNABLE) || (env->env_status == ENV_RUNNING)) 
+	    && (tnv->env_rt_nt)) {
+	        if(env->env_cc <= min_cc) {
 	            min_cc = env->env_cc;
 	            next_envid = i;
 	        }                                               
@@ -96,16 +97,19 @@ sched_yield(void)
 
 	for(i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
-        if (envs[next_envid].env_status == ENV_RUNNABLE) {
-            cprintf("envrun RUNNABLE: %d [%08x]\n", next_envid, envs[next_envid].env_id);
-            env_run(&envs[next_envid]);
+        if(((env = &envs[next_envid])->env_priority != ENV_PRIORITY_HIGH) 
+            && env->env_status == ENV_RUNNABLE) {
+            cprintf("envrun RUNNABLE: %d [%08x]\n", next_envid, env->env_id);
+            env_run(env);
             break;
         }
     }
     
     for(i = 0; i < NENV; i++) {
         next_envid = (first_eid + i) % NENV;
-        if ((envs[next_envid].env_status == ENV_RUNNING) && (envs[next_envid].env_cpunum == thiscpu->cpu_id)) {
+        if(((env = &envs[next_envid])->env_priority != ENV_PRIORITY_HIGH)
+            && (env->env_status == ENV_RUNNING) 
+            && (env->env_cpunum == thiscpu->cpu_id)) {
             cprintf("envrun RUNNING: %d [%08x]\n", next_envid, envs[next_envid].env_id);
             env_run(&envs[next_envid]);
             break;
