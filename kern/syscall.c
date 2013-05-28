@@ -47,8 +47,8 @@ sys_make_me_real(int p, int c, int d)
 static void 
 sys_work_done() 
 {
-	curenv->env_cc = -1;
 	curenv->env_status = ENV_NOT_RUNNABLE;
+	curenv->env_cc = -1;	
 }
 
 //sleep env
