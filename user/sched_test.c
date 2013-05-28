@@ -9,7 +9,7 @@ umain(int argc, char **argv)
 
 	sys_make_me_real(50, 20, 50);
 
-	cprintf("Hello, I am real-time environment %08x.\n", thisenv->env_id);
+	cprintf("Hello, I am real-time environment [%08x].\n", thisenv->env_id);
 	
 	int x[1000][1000];
 	int y[1000][1000];
@@ -44,5 +44,5 @@ umain(int argc, char **argv)
      	sys_work_done();
     }
 
-	cprintf("All done in environment %08x.\n", thisenv->env_id);
+	cprintf("All done in environment [%08x].\n", thisenv->env_id);
 }

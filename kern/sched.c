@@ -77,6 +77,7 @@ sched_yield(void)
 	    if(((env = &envs[i])->env_priority == ENV_PRIORITY_HIGH) 
 	    && ((env->env_status == ENV_RUNNABLE) || (env->env_status == ENV_RUNNING)) ) {
 	        if((env->env_cc > 0) && (env->env_cc <= min_cc)) {
+	            min_cc = env->env_cc;
 	            next_envid = i;
 	        }                                               
 	    }    
