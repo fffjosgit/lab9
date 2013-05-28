@@ -77,6 +77,8 @@ sched_yield(void)
 	    && (curenv->env_status == ENV_RUNNING)) {
 	    if(curenv->env_cc >= 0) {
 	        curenv->env_cc--;
+	    } else if(curenv->env_rt_nt) {
+	        cprintf("[%08x]: real-time warning", env->env_id);
 	    }         
 	}
 
