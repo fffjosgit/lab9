@@ -58,14 +58,15 @@ sched_yield(void)
 
 	        if(env->env_cp <= 0) {
 	            env->env_cp = env->env_p;
-	            if(env->env_cc > 0) {
+	            if(env->env_rt_nt) {
 	                panic("sched_yield: REAL_TIME!");	                
 	            } else {
 	                env->env_cc = env->env_c;
 	                env->env_rt_nt = 1;    
 	            }
-	        } 
-	        env->env_cp--;	        	            
+	        } else { 
+	            env->env_cp--;
+	        }	        	            
 	    }
 	}
 	
