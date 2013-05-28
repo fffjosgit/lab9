@@ -39,9 +39,9 @@ umain(int argc, char **argv)
 
 	    //cprintf("X \n");
 
-	    sys_sleep(10);
-
-     	sys_work_done();
+	    sys_work_done();
+	    
+	    sys_sleep(20);    	
     }
 
 	cprintf("All done in environment [%08x].\n", thisenv->env_id);
