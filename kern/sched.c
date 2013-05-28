@@ -65,7 +65,7 @@ sched_yield(void)
 	                env->env_status = ENV_RUNNABLE;    
 	            }
 	        } else if(env->env_cc < 0) {
-	            env->env_status = ENV_BLOCKING;
+	            env->env_status = ENV_NOT_RUNNABLE;
 	        }
 	        env->env_cp--;	        	            
 	    }
