@@ -70,10 +70,10 @@ i386_init(void)
 	NEW_ENV_CREATE(user_idle, ENV_TYPE_USER);
 	
 	NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
-	//NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
-	//NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
-	//NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
-	//NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
+	NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
+	NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
+	NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
+	NEW_ENV_CREATE(user_sched_test, ENV_TYPE_USER);
 #endif // TEST*
 
 	// We only have one user environment for now, so just run it.
