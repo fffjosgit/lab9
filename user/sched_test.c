@@ -28,6 +28,7 @@ umain(int argc, char **argv)
     	cprintf("[%08x]: A \n", thisenv->env_id);
     	
     	srand(read_tsc());
+
 	    for(i = 0; i < 1000; i++) {
 	        for(j = 0; j < 1000; j++) {
 	            x[i][j] = rand();
@@ -42,9 +43,7 @@ umain(int argc, char **argv)
 	                z[i][j] += x[i][k] * y[k][j];
 	            }	            
 	        }
-	    }
-
-	    
+	    }	    
 
 	    cprintf("[%08x]: B \n", thisenv->env_id);
 	    sys_work_done();	    
