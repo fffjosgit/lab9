@@ -59,7 +59,7 @@ sched_yield(void)
 	        if(env->env_cp <= 0) {
 	            env->env_cp = env->env_p;
 	            if(env->env_rt_nt) {
-	                panic("sched_yield: REAL_TIME!");	                
+	                panic("sched_yield: REAL_TIME! \n");	                
 	            } else {
 	                env->env_cc = env->env_c;
 	                env->env_rt_nt = 1;    
@@ -78,7 +78,7 @@ sched_yield(void)
 	    if(curenv->env_cc >= 0) {
 	        curenv->env_cc--;
 	    } else if(curenv->env_rt_nt) {
-	        cprintf("[%08x]: real-time warning", env->env_id);
+	        cprintf("[%08x]: real-time warning. \n", env->env_id);
 	    }         
 	}
 
