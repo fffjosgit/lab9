@@ -2,7 +2,7 @@
 
 #include <inc/lib.h>
 #include <inc/random.h>
-#include <inc/rx86.h>
+#include <inc/x86.h>
 
 
 
