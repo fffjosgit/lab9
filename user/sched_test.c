@@ -41,8 +41,8 @@ umain(int argc, char **argv)
 
 	    //
 
-	    sys_work_done();
 	    cprintf("B: [%08x].\n", thisenv->env_id);
+	    sys_work_done();	    
 	    
 	    //sys_sleep(20);    	
     }
