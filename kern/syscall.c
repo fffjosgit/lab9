@@ -50,7 +50,8 @@ static void
 sys_work_done() 
 {
 	curenv->env_rt_nt = 0;
-	curenv->env_cc = -1;	
+	curenv->env_cc = -1;
+	sched_yield();	
 }
 
 //sleep env
