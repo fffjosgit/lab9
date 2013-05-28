@@ -37,9 +37,10 @@ umain(int argc, char **argv)
 	        }
 	    }
 
-	    //cprintf("X \n");
+	    //
 
 	    sys_work_done();
+	    cprintf("done: [%08x].\n", thisenv->env_id);
 	    
 	    //sys_sleep(20);    	
     }
