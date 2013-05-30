@@ -8,6 +8,19 @@
 
 #define	IO_RTC		0x070		/* RTC port */
 
+
+#define	IO_RTC_CMND		0x070		/* RTC control port */
+#define	IO_RTC_DATA		0x071		/* RTC data port */
+
+#define RTC_AREG	0x0A
+#define RTC_BREG	0x0B
+#define RTC_CREG	0x0C
+#define RTC_DREG	0x0D
+
+#define RTC_PIE		0x40
+#define RTC_AIE		0x20
+#define RTC_UIE		0x10
+
 #define	MC_NVRAM_START	0xe	/* start of NVRAM: offset 14 */
 #define	MC_NVRAM_SIZE	50	/* 50 bytes of NVRAM */
 
@@ -28,5 +41,7 @@
 
 unsigned mc146818_read(unsigned reg);
 void mc146818_write(unsigned reg, unsigned datum);
+void rtc_init(void);
+uint8_t rtc_check_status(void);
 
 #endif	// !JOS_KERN_KCLOCK_H
